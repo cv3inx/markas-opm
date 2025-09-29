@@ -2,8 +2,10 @@ name: cf workers
 
 on:
   workflow_dispatch:
+
   push:
-    branches: [ master ]
+    branches:
+      - master
     paths-ignore:
       - 'README.md'
       - 'LICENSE.md'
@@ -15,21 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Toolchain Rust (wajib karena build via cargo)
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust and worker-build
+        run: |
+          rustup update
+          rustup target add wasm32-unknown-unknown
+          cargo install -q worker-build
 
-      # Wrangler v4
-      - name: Install Wrangler
-        run: npm install -g wrangler@4
+      - name: Build with worker-build (no wasm-opt)
+        run: WASMOPT=0 worker-build --release
 
-      # (Opsional) Pastikan binaryen terbaru tersedia
-      - name: Install binaryen (optional)
-        run: sudo apt-get update && sudo apt-get install -y binaryen
-
-      # Deploy (prod/top-level env) + enable bulk-memory untuk wasm-opt
-      - name: Deploy to Cloudflare Workers (prod)
-        run: npx wrangler deploy --env=""
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          WASMOPT_ARGS: --enable-bulk-memory
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
