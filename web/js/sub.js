@@ -4,9 +4,9 @@
 
 // Configuration
 const CONFIG = {
-  proxyListUrl: "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt",
+  proxyListUrl: "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt",
   apiCheckUrl: "https://afrcloud.dpdns.org/",
-  mainDomains: ["zerostore.ggff.net"],
+  mainDomains: ["zerostore.tech"],
   defaultUuid: "bbbbbbbb-zero-store-eeee-ffffffffffff",
   maxProxies: 50,
   defaultProxyCount: 5,
