@@ -9,9 +9,9 @@ const QRCode = window.QRCode
 let proxyList = []
 let filteredProxyList = []
 let selectedProxy = null
-const defaultProxyUrl = "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt"
+const defaultProxyUrl = "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt"
 
-const serverDomains = ["zerostore.ggff.net"]
+const serverDomains = ["zerostore.tecg"]
 let selectedServerDomain = serverDomains[0] // Default to first domain
 const defaultUUID = "bbbbbbbb-zero-store-eeee-ffffffffffff"
 const itemsPerPage = 10
