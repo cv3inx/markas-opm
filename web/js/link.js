@@ -684,7 +684,7 @@ function renderProxyList() {
     proxyListContainer.appendChild(card)
 
     // Check proxy status for this card
-    const statusURL = `https://afrcloud.dpdns.org/${proxy.ip}:${proxy.port}`
+    const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`
 
     fetch(statusURL)
       .then((response) => response.json())
@@ -728,7 +728,7 @@ function renderProxyList() {
 
 // Function to check proxy status in the list
 function checkProxyStatusInList(proxy, statusBadge) {
-  const statusURL = `https://afrcloud.dpdns.org/${proxy.ip}:${proxy.port}`
+  const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`
 
   fetch(statusURL)
     .then((response) => response.json())
@@ -925,7 +925,7 @@ async function selectProxy(index) {
 // Function to check proxy status in the account creation section
 function checkProxyStatus(proxy) {
   const startTime = performance.now()
-  const statusURL = `https://tt.rohendimtq246.workers.dev/${proxy.ip}:${proxy.port}`
+  const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`
   const statusContainer = document.getElementById("proxy-status-container")
   const statusLoading = document.getElementById("proxy-status-loading")
   const statusActive = document.getElementById("proxy-status-active")
