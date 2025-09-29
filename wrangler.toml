@@ -1,59 +1,39 @@
-name = "siren"
+name = "final-siren"
 main = "build/worker/shim.mjs"
 compatibility_date = "2024-05-23"
 minify = true
 workers_dev = true
 
-# Routes (v3 style)
-[[routes]]
-pattern = "zerostore.tech/*"
-zone_name = "zerostore.tech"
 
-[[routes]]
-pattern = "ava.game.naver.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
+routes = [
+  { pattern = "zerostore.tech", custom_domain = true },
+  { pattern = "support.zoom.us.zerostore.tech", custom_domain = true },
+  { pattern = "ava.game.naver.com.zerostore.tech", custom_domain = true },
+  { pattern = "graph.instagram.com.zerostore.tech", custom_domain = true },
+  { pattern = "df.game.naver.com.zerostore.tech", custom_domain = true },
+  { pattern = "quiz.int.vidio.com.zerostore.tech", custom_domain = true },
+  { pattern = "zoomgov.com.zerostore.tech", custom_domain = true },
+  { pattern = "api24-normal-alisg.tiktokv.com.zerostore.tech", custom_domain = true },
+  { pattern = "zaintest.vuclip.com.zerostore.tech", custom_domain = true },
+  { pattern = "help.viu.com.zerostore.tech", custom_domain = true },
+  { pattern = "grabacademyportal.grab.com.zerostore.tech", custom_domain = true },
+  { pattern = "api22-normal-c-alisg.tiktokv.com.zerostore.tech", custom_domain = true },
+  { pattern = "live.iflix.com.zerostore.tech", custom_domain = true },
+  { pattern = "store.linefriends.com.zerostore.tech", custom_domain = true },
+  { pattern = "cache.netflix.com.zerostore.tech", custom_domain = true },
+  { pattern = "customlinks.appsflyer.com.zerostore.tech", custom_domain = true }
+]
 
-[[routes]]
-pattern = "quiz.int.vidio.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "graph.instagram.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "help.viu.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "support.zoom.us.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "cache.netflix.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "graph.facebook.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-[[routes]]
-pattern = "dogseechew.com.zerostore.tech/*"
-zone_name = "zerostore.tech"
-
-# KV binding
 [[kv_namespaces]]
 binding = "SIREN"
 id = "3a39adcba8494ebca86c63f960871247"
 
-# Build (Rust worker / workers-rs)
 [build]
 command = "cargo install -q worker-build && worker-build --release"
 
 [env.dev]
 build = { command = "cargo install -q worker-build && worker-build --dev" }
 
-# Vars
 [vars]
 UUID = "1abe4bd9-06f0-4fb7-9173-d4524b056a3a"
 MAIN_PAGE_URL = "https://raw.githubusercontent.com/dit1304/Cloud/main/web/index.html"
