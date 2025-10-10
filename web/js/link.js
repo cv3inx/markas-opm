@@ -11,7 +11,7 @@ let filteredProxyList = []
 let selectedProxy = null
 const defaultProxyUrl = "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt"
 
-const serverDomains = ["zerostore.tech"]
+const serverDomains = ["zerostore.org"]
 let selectedServerDomain = serverDomains[0] // Default to first domain
 const defaultUUID = "bbbbbbbb-zero-store-eeee-ffffffffffff"
 const itemsPerPage = 10
