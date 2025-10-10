@@ -12,7 +12,7 @@ routes = [
   { pattern = "graph.instagram.com.zerostore.org", custom_domain = true },
   { pattern = "df.game.naver.com.zerostore.org", custom_domain = true },
   { pattern = "quiz.int.vidio.com.zerostore.org", custom_domain = true },
-  { pattern = "zoomgov.com.zerostore.tech", custom_domain = true },
+  { pattern = "zoomgov.com.zerostore.org", custom_domain = true },
   { pattern = "api24-normal-alisg.tiktokv.com.zerostore.org", custom_domain = true },
   { pattern = "zaintest.vuclip.com.zerostore.org", custom_domain = true },
   { pattern = "help.viu.com.zerostore.org", custom_domain = true },
