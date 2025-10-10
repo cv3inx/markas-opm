@@ -6,7 +6,7 @@
 const CONFIG = {
   proxyListUrl: "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt",
   apiCheckUrl: "https://api.jb8fd7grgd.workers.dev",
-  mainDomains: ["zerostore.tech"],
+  mainDomains: ["zerostore.org"],
   defaultUuid: "bbbbbbbb-zero-store-eeee-ffffffffffff",
   maxProxies: 50,
   defaultProxyCount: 5,
