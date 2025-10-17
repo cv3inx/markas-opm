@@ -96,6 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  document.getElementById("back-to-list").addEventListener("click", () => {
+    showProxyListSection();
+  });
+
   document.getElementById("back-to-form").addEventListener("click", () => {
     resultSection.classList.add("hidden");
     accountCreationSection.classList.remove("hidden");
@@ -105,6 +109,12 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.classList.add("hidden");
     accountCreationSection.classList.remove("hidden");
   });
+
+  document
+    .getElementById("back-to-list-from-result")
+    .addEventListener("click", () => {
+      showProxyListSection();
+    });
 
   // Search functionality
   searchInput.addEventListener("input", function () {
