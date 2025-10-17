@@ -6,11 +6,11 @@
 const CONFIG = {
   proxyListUrl: "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt",
   apiCheckUrl: "https://api.jb8fd7grgd.workers.dev",
-  mainDomains: ["zerostore.org"],
-  defaultUuid: "bbbbbbbb-zero-store-eeee-ffffffffffff",
+  mainDomains: ["markas-opm.pp.ua"],
+  defaultUuid: "bbbbbbbb-opeem-jiir-ffffffffffff",
   maxProxies: 50,
   defaultProxyCount: 5,
-  pathTemplate: "/ZEROSTORE/{ip}-{port}",
+  pathTemplate: "/MARKASOPM/{ip}-{port}",
 }
 
 // Global variables

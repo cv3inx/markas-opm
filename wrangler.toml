@@ -1,4 +1,4 @@
-name = "siren"
+name = "opm"
 main = "build/worker/shim.mjs"
 compatibility_date = "2024-05-23"
 minify = true
@@ -6,27 +6,27 @@ workers_dev = true
 
 
 routes = [
-  { pattern = "zerostore.org", custom_domain = true },
-  { pattern = "support.zoom.us.zerostore.org", custom_domain = true },
-  { pattern = "ava.game.naver.com.zerostore.org", custom_domain = true },
-  { pattern = "graph.instagram.com.zerostore.org", custom_domain = true },
-  { pattern = "df.game.naver.com.zerostore.org", custom_domain = true },
-  { pattern = "quiz.int.vidio.com.zerostore.org", custom_domain = true },
-  { pattern = "zoomgov.com.zerostore.org", custom_domain = true },
-  { pattern = "api24-normal-alisg.tiktokv.com.zerostore.org", custom_domain = true },
-  { pattern = "zaintest.vuclip.com.zerostore.org", custom_domain = true },
-  { pattern = "help.viu.com.zerostore.org", custom_domain = true },
-  { pattern = "grabacademyportal.grab.com.zerostore.org", custom_domain = true },
-  { pattern = "api22-normal-c-alisg.tiktokv.com.zerostore.org", custom_domain = true },
-  { pattern = "live.iflix.com.zerostore.org", custom_domain = true },
-  { pattern = "store.linefriends.com.zerostore.org", custom_domain = true },
-  { pattern = "cache.netflix.com.zerostore.org", custom_domain = true },
-  { pattern = "customlinks.appsflyer.com.zerostore.org", custom_domain = true }
+  { pattern = "markas-opm.pp.ua", custom_domain = true },
+  { pattern = "support.zoom.us.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "ava.game.naver.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "graph.instagram.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "df.game.naver.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "quiz.int.vidio.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "zoomgov.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "api24-normal-alisg.tiktokv.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "zaintest.vuclip.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "help.viu.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "grabacademyportal.grab.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "api22-normal-c-alisg.tiktokv.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "live.iflix.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "store.linefriends.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "cache.netflix.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "customlinks.appsflyer.com.markas-opm.pp.ua", custom_domain = true }
 ]
 
 [[kv_namespaces]]
-binding = "SIREN"
-id = "0a250eab039e4e748c37a62239e816e9"
+binding = "opm"
+id = "0c42ed0e5d1e4cbb8127c1353bb74818"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"

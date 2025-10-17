@@ -11,23 +11,20 @@ let filteredProxyList = []
 let selectedProxy = null
 const defaultProxyUrl = "https://raw.githubusercontent.com/dit1304/proxie/main/proxyList.txt"
 
-const serverDomains = ["zerostore.org"]
+const serverDomains = ["markas-opm.pp.ua"]
 let selectedServerDomain = serverDomains[0] // Default to first domain
-const defaultUUID = "bbbbbbbb-zero-store-eeee-ffffffffffff"
+const defaultUUID = "bbbbbbbb-opeem-jiir-ffffffffffff"
 const itemsPerPage = 10
 let currentPage = 1
 
-const pathTemplate = "/ZEROSTORE/{ip}-{port}"
+const pathTemplate = "/MARKASOPM/{ip}-{port}"
 
 // Array of bug options for easy management
 const bugOptions = [
   { value: "", label: "Default" },
-  { value: "cache.netflix.com", label: "cache.netflix.com" },
   { value: "ava.game.naver.com", label: "ava.game.naver.com" },
   { value: "support.zoom.us", label: "support.zoom.us" },
-  { value: "help.viu.com", label: "help.viu.com" },
-  { value: "dogseechew.com", label: "dogseechew.com" },
-  { value: "instagram.com", label: "instagram.com" },
+  { value: "api24-normal-alisg.tiktokv.com", label: "api24-normal-alisg.tiktokv.com" },
   { value: "manual", label: "Type Manual" },
 ]
 
