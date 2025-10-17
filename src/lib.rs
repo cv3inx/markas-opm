@@ -17,7 +17,7 @@ static PROXYIP_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"^.+-\d+$").unwra
 static PROXYKV_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"^([A-Z]{2})").unwrap());
 
 // Base URL for GitHub raw content
-static GITHUB_BASE_URL: &str = "https://raw.githubusercontent.com/dit1304/Cloud/main/web";
+static GITHUB_BASE_URL: &str = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web";
 
 #[event(fetch)]
 async fn main(req: Request, env: Env, _: Context) -> Result<Response> {

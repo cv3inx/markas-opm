@@ -36,7 +36,7 @@ build = { command = "cargo install -q worker-build && worker-build --dev" }
 
 [vars]
 UUID = "1abe4bd9-06f0-4fb7-9173-d4524b056a3a"
-MAIN_PAGE_URL = "https://raw.githubusercontent.com/dit1304/Cloud/main/web/index.html"
-SUB_PAGE_URL = "https://raw.githubusercontent.com/dit1304/Cloud/main/web/sub.html"
-LINK_PAGE_URL = "https://raw.githubusercontent.com/dit1304/Cloud/main/web/link.html"
-CONVERTER_PAGE_URL = "https://raw.githubusercontent.com/dit1304/Cloud/main/web/converter.html"
+MAIN_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/index.html"
+SUB_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/sub.html"
+LINK_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/link.html"
+CONVERTER_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/converter.html"
