@@ -195,30 +195,37 @@ async fn converter(_: Request, cx: RouteContext<Config>) -> Result<Response> {
     get_response_from_url(cx.data.converter_page_url).await
 }
 
+// KEEP THE TUNNEL FUNCTION EXACTLY AS IT WAS IN THE ORIGINAL
 async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> {
-    // Ambil parameter proxyip
-    let mut proxyip = cx.param("proxyip").unwrap_or_default();
+    // Ambil parameter proxyip dengan aman
+    let mut proxyip = cx.param("proxyip").unwrap_or("").to_string();
 
-    // Lewati semua tanpa pesan error
+    // Kalau kosong, return clean (tanpa pesan)
     if proxyip.is_empty() {
-        return Response::empty(); // gak kirim apapun, clean
+        return Response::empty();
     }
 
-    // Kalau proxyip pakai KV
+    // Cek apakah proxyip adalah KV pattern
     if PROXYKV_PATTERN.is_match(&proxyip) {
         let kvid_list: Vec<String> = proxyip.split(',').map(|s| s.to_string()).collect();
         let kv = cx.kv("opm")?;
         let mut proxy_kv_str = kv.get("proxy_kv").text().await?.unwrap_or_default();
         let mut rand_buf = [0u8; 1];
-        getrandom::getrandom(&mut rand_buf).ok();
+        let _ = getrandom::getrandom(&mut rand_buf);
 
-        // Ambil dari GitHub kalau KV kosong
+        // Ambil data proxy dari GitHub kalau belum ada di KV
         if proxy_kv_str.is_empty() {
             console_log!("getting proxy kv from github...");
-            if let Ok(mut res) = Fetch::Url(Url::parse("https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json")?).send().await {
+            if let Ok(mut res) = Fetch::Url(Url::parse(
+                "https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json",
+            )?)
+            .send()
+            .await
+            {
                 if res.status_code() == 200 {
                     proxy_kv_str = res.text().await?.to_string();
-                    let _ = kv.put("proxy_kv", &proxy_kv_str)?
+                    let _ = kv
+                        .put("proxy_kv", &proxy_kv_str)?
                         .expiration_ttl(60 * 60 * 24)
                         .execute()
                         .await;
@@ -247,25 +254,31 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
         }
     }
 
-    // Handle WebSocket
+    // Cek header Upgrade
     let upgrade = req.headers().get("Upgrade")?.unwrap_or_default();
     if upgrade == "websocket" {
         let WebSocketPair { server, client } = WebSocketPair::new()?;
         server.accept()?;
 
-        // Gunakan wait_until biar gak dianggap hang
-        cx.ctx.wait_until(async move {
-            if let Some(events) = server.events() {
-                if let Err(e) = ProxyStream::new(cx.data, &server, events).process().await {
-                    console_log!("[tunnel error]: {}", e);
+        // Gunakan spawn_local supaya gak hang di Cloudflare Worker
+        wasm_bindgen_futures::spawn_local({
+            let config = cx.data.clone();
+            async move {
+                match server.events() {
+                    Ok(events) => {
+                        if let Err(e) = ProxyStream::new(config, &server, events).process().await {
+                            console_log!("[tunnel error]: {}", e);
+                        }
+                    }
+                    Err(e) => console_log!("WebSocket event error: {}", e),
                 }
             }
         });
 
-        // Return WS client (no body)
+        // Return websocket client ke client
         return Response::from_websocket(client);
     }
 
-    // Clean & silent (no content, no error)
+    // Kalau bukan websocket, tetap clean (no HTML, no error)
     Response::empty()
 }
