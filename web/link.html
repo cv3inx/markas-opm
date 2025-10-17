@@ -104,11 +104,423 @@
                         <div id="proxy-count-info" class="text-center mt-2 text-sm text-white/50"></div>
                     </div>
 
-                    <div id="account-creation-section" class="hidden">
+                                <!-- Account Creation Section -->
+                <div id="account-creation-section" class="mt-6 hidden">
+                    <div class="pt-4">
+                        <div class="divider mb-6"></div>
+                        <div class="flex justify-between items-center mb-5">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-plus mr-2 text-indigo-400"></i>
+                                <h2 class="text-xl font-semibold">Create Account</h2>
+                            </div>
+                            <button id="back-to-list" class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors text-sm">
+                                <i class="fas fa-arrow-left mr-2"></i> Back to List
+                            </button>
                         </div>
-
-                    <div id="result-section" class="hidden">
+                        
+                        <div class="card p-5 mb-6 overflow-hidden relative">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
+                            
+                            <h3 class="text-base font-medium text-indigo-400 mb-4 flex items-center">
+                                <i class="fas fa-server mr-2"></i>
+                                Selected Proxy
+                            </h3>
+                            
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
+                                    <i class="fas fa-building text-indigo-400/70 w-5 text-center"></i>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Provider</div>
+                                        <div id="selected-provider" class="text-sm font-medium text-white">-</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
+                                    <i class="fas fa-globe-americas text-indigo-400/70 w-5 text-center"></i>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Country</div>
+                                        <div id="selected-country" class="text-sm font-medium text-white">-</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
+                                    <i class="fas fa-network-wired text-indigo-400/70 w-5 text-center"></i>
+                                    <div>
+                                        <div class="text-xs text-gray-400">IP</div>
+                                        <div id="selected-ip" class="text-sm font-medium text-white">-</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
+                                    <i class="fas fa-plug text-indigo-400/70 w-5 text-center"></i>
+                                    <div>
+                                        <div class="text-xs text-gray-400">Port</div>
+                                        <div id="selected-port" class="text-sm font-medium text-white">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="proxy-status-container" class="hidden">
+                                <div id="proxy-status-active" class="hidden rounded-lg p-3 bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 border border-emerald-500/20">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mr-3 border border-emerald-500/30">
+                                            <i class="fas fa-check text-emerald-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-emerald-400">ACTIVE</div>
+                                            <div class="text-xs text-gray-400">Latency: <span id="proxy-latency" class="text-amber-400">0ms</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="proxy-status-dead" class="hidden rounded-lg p-3 bg-gradient-to-r from-rose-900/20 to-rose-800/10 border border-rose-500/20">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center mr-3 border border-rose-500/30">
+                                            <i class="fas fa-times text-rose-500"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-rose-500">DEAD</div>
+                                            <div class="text-xs text-gray-400">This proxy may not be working</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="proxy-status-unknown" class="hidden rounded-lg p-3 bg-gradient-to-r from-amber-900/20 to-amber-800/10 border border-amber-500/20">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center mr-3 border border-amber-500/30">
+                                            <i class="fas fa-question text-amber-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-amber-400">UNKNOWN</div>
+                                            <div class="text-xs text-gray-400">Could not check proxy status</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="proxy-status-loading" class="rounded-lg p-3 bg-gradient-to-r from-indigo-900/20 to-indigo-800/10 border border-indigo-500/20">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center mr-3 border border-indigo-500/30">
+                                            <div class="loading-spinner-sm"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-indigo-400">CHECKING</div>
+                                            <div class="text-xs text-gray-400">Verifying proxy status...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Tabs -->
+                        <div class="flex border-b border-gray-700 mb-6 overflow-x-auto space-x-1 sm:space-x-0">
+                            <button class="tab-btn active py-3 px-4 font-medium text-sm focus:outline-none" data-target="vmess-form">
+                                <i class="fas fa-shield-alt mr-2"></i>VMess
+                            </button>
+                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="vless-form">
+                                <i class="fas fa-bolt mr-2"></i>VLESS
+                            </button>
+                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="trojan-form">
+                                <i class="fas fa-user-secret mr-2"></i>Trojan
+                            </button>
+                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="ss-form">
+                                <i class="fas fa-mask mr-2"></i>SS
+                            </button>
+                        </div>
+                        
+                        <!-- VMess Form -->
+                        <div id="vmess-form" class="protocol-form">
+                            <form id="vmess-account-form" class="space-y-5">
+                                <div>
+                                    <label for="vmess-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
+                                    <input type="text" id="vmess-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="vmess-uuid" class="block text-sm font-medium text-gray-300 mb-2">UUID</label>
+                                    <div class="flex">
+                                        <input type="text" id="vmess-uuid" name="uuid" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="1abe4bd9-06f0-4fb7-9173-d4524b056a3a" required>
+                                        <button type="button" onclick="generateUUID('vmess-uuid')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="vmess-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
+                                    <input type="text" id="vmess-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="vmess-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
+                                    <select id="vmess-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <option value="tls">TLS</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                    <input type="hidden" id="vmess-encryption" name="encryption" value="zero">
+                                </div>
+                                
+                                <div>
+                                    <label for="vmess-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
+                                    <select id="vmess-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="vmess-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
+                                    <select id="vmess-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <div id="vmess-manual-bug-container" class="wildcard-container">
+                                        <input type="text" id="vmess-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
+                                    </div>
+                                    <div id="vmess-wildcard-container" class="wildcard-container">
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" id="vmess-wildcard" name="wildcard">
+                                            <label for="vmess-wildcard">Gunakan Wildcard (bug.domain.com)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2">
+                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plus-circle mr-2"></i> Create VMess Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- VLESS Form -->
+                        <div id="vless-form" class="protocol-form hidden">
+                            <form id="vless-account-form" class="space-y-5">
+                                <div>
+                                    <label for="vless-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
+                                    <input type="text" id="vless-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="vless-uuid" class="block text-sm font-medium text-gray-300 mb-2">UUID</label>
+                                    <div class="flex">
+                                        <input type="text" id="vless-uuid" name="uuid" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="1abe4bd9-06f0-4fb7-9173-d4524b056a3a" required>
+                                        <button type="button" onclick="generateUUID('vless-uuid')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="vless-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
+                                    <input type="text" id="vless-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="vless-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
+                                    <select id="vless-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <option value="tls">TLS</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="vless-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
+                                    <select id="vless-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="vless-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
+                                    <select id="vless-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <div id="vless-manual-bug-container" class="wildcard-container">
+                                        <input type="text" id="vless-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
+                                    </div>
+                                    <div id="vless-wildcard-container" class="wildcard-container">
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" id="vless-wildcard" name="wildcard">
+                                            <label for="vless-wildcard">Gunakan Wildcard (bug.domain.com)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2">
+                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plus-circle mr-2"></i> Create VLESS Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Trojan Form -->
+                        <div id="trojan-form" class="protocol-form hidden">
+                            <form id="trojan-account-form" class="space-y-5">
+                                <div>
+                                    <label for="trojan-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
+                                    <input type="text" id="trojan-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="trojan-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                                    <div class="flex">
+                                        <input type="text" id="trojan-password" name="password" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
+                                        <button type="button" onclick="generatePassword('trojan-password')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="trojan-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
+                                    <input type="text" id="trojan-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="trojan-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
+                                    <select id="trojan-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <option value="tls">TLS</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="trojan-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
+                                    <select id="trojan-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="trojan-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
+                                    <select id="trojan-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <div id="trojan-manual-bug-container" class="wildcard-container">
+                                        <input type="text" id="trojan-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
+                                    </div>
+                                    <div id="trojan-wildcard-container" class="wildcard-container">
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" id="trojan-wildcard" name="wildcard">
+                                            <label for="trojan-wildcard">Gunakan Wildcard (bug.domain.com)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2">
+                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plus-circle mr-2"></i> Create Trojan Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Shadowsocks Form -->
+                        <div id="ss-form" class="protocol-form hidden">
+                            <form id="ss-account-form" class="space-y-5">
+                                <div>
+                                    <label for="ss-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
+                                    <input type="text" id="ss-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="ss-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                                    <div class="flex">
+                                        <input type="text" id="ss-password" name="password" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
+                                        <button type="button" onclick="generatePassword('ss-password')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="ss-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
+                                    <input type="text" id="ss-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
+                                </div>
+                                
+                                <div>
+                                    <label for="ss-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
+                                    <select id="ss-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <option value="tls">TLS</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="ss-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
+                                    <select id="ss-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="ss-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
+                                    <select id="ss-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
+                                        <!-- Options will be populated dynamically -->
+                                    </select>
+                                    <div id="ss-manual-bug-container" class="wildcard-container">
+                                        <input type="text" id="ss-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
+                                    </div>
+                                    <div id="ss-wildcard-container" class="wildcard-container">
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" id="ss-wildcard" name="wildcard">
+                                            <label for="ss-wildcard">Gunakan Wildcard (bug.domain.com)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-2">
+                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plus-circle mr-2"></i> Create Shadowsocks Account
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Result Section -->
+                <div id="result-section" class="mt-6 hidden">
+                    <div class="pt-4">
+                        <div class="divider mb-6"></div>
+                        <div class="flex justify-between items-center mb-5">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-2 text-emerald-400"></i>
+                                <h2 class="text-xl font-semibold">Account Created</h2>
+                            </div>
+                            <button id="back-to-form" class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors text-sm">
+                                <i class="fas fa-arrow-left mr-2"></i> Back
+                            </button>
+                        </div>
+                        
+                        <div class="card p-5 mb-5">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-base font-medium text-indigo-400">Connection URL</h3>
+                                <button id="copy-url" class="flex items-center text-indigo-400 hover:text-indigo-300 text-xs transition-colors">
+                                    <i class="far fa-copy mr-1"></i> Copy
+                                </button>
+                            </div>
+                            <div id="connection-url" class="text-xs glass-code p-4 rounded-lg break-all font-mono"></div>
+                        </div>
+                        
+                        <div class="card p-5">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-base font-medium text-indigo-400">QR Code</h3>
+                                <button id="download-qr" class="flex items-center text-indigo-400 hover:text-indigo-300 text-xs transition-colors">
+                                    <i class="fas fa-download mr-1"></i> Download
+                                </button>
+                            </div>
+                            <div class="flex justify-center py-4">
+                                <div id="qrcode" class="qrcode-container"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                            <button id="create-new" class="flex-1 primary-btn py-3 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <i class="fas fa-plus-circle mr-2"></i> Create Another
+                            </button>
+                            <button id="back-to-list-from-result" class="flex-1 secondary-btn py-3 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <i class="fas fa-list mr-2"></i> Back to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
