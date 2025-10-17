@@ -1307,8 +1307,11 @@ function generateNekoboxConfig(parsedLinks) {
 
 // Show loading message
 function showLoading(message) {
+  const loadingText = document.getElementById("loading-text");
+
   loadingElement.style.display = "block";
-  loadingElement.getElementById("loading-text").textContent = message;
+  if (loadingText) loadingText.textContent = message;
+
   resultElement.style.display = "none";
   validationStatusElement.style.display = "none";
 }
