@@ -134,129 +134,150 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProxyList();
   });
 
-  // Protocol tabs
-  const protocolTabs = document.querySelectorAll(".tab-btn");
-  const protocolForms = document.querySelectorAll(".protocol-form");
+// Protocol tabs
+const protocolTabs = document.querySelectorAll(".tab-btn");
+const protocolForms = document.querySelectorAll(".protocol-form");
 
-  protocolTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      // Remove active class from all tabs
-      protocolTabs.forEach((t) => {
-        t.classList.remove("active");
-      });
+function activateTab(targetId) {
+  // Reset semua tab & form
+  protocolTabs.forEach((t) => t.classList.remove("active"));
+  protocolForms.forEach((f) => f.classList.add("hidden"));
 
-      // Add active class to clicked tab
-      tab.classList.add("active");
+  // Aktifkan tab yg diklik
+  const activeTab = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
+  if (activeTab) activeTab.classList.add("active");
 
-      // Hide all forms
-      protocolForms.forEach((form) => {
-        form.classList.add("hidden");
-      });
+  // Tampilkan form sesuai tab
+  const targetForm = document.getElementById(targetId);
+  if (targetForm) targetForm.classList.remove("hidden");
 
-      // Show the selected form
-      const targetId = tab.getAttribute("data-target");
-      document.getElementById(targetId).classList.remove("hidden");
-    });
+  // Reset kondisi dropdown bug & wildcard saat ganti tab
+  resetBugAndWildcardStates();
+}
+
+protocolTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const targetId = tab.getAttribute("data-target");
+    activateTab(targetId);
   });
+});
 
-  // Populate server domain dropdowns
-  const serverDomainSelects = [
-    document.getElementById("vmess-server-domain"),
-    document.getElementById("vless-server-domain"),
-    document.getElementById("trojan-server-domain"),
-    document.getElementById("ss-server-domain"),
-  ];
-
-  serverDomainSelects.forEach((select) => {
-    if (select) {
-      // Clear existing options
-      select.innerHTML = "";
-
-      // Add options for each domain
-      serverDomains.forEach((domain) => {
-        const option = document.createElement("option");
-        option.value = domain;
-        option.textContent = domain;
-        select.appendChild(option);
-      });
-
-      // Add event listener to update selected domain
-      select.addEventListener("change", function () {
-        selectedServerDomain = this.value;
-      });
-    }
-  });
-
-  // Populate bug options dropdowns
-  populateBugOptions();
-
-  // Form submissions
-  const forms = [
-    document.getElementById("vmess-account-form"),
-    document.getElementById("vless-account-form"),
-    document.getElementById("trojan-account-form"),
-    document.getElementById("ss-account-form"),
-  ];
-
-  // Custom Bug dan Wildcard functionality
-  const bugInputs = [
-    document.getElementById("vmess-bug"),
-    document.getElementById("vless-bug"),
-    document.getElementById("trojan-bug"),
-    document.getElementById("ss-bug"),
-  ];
-
-  const wildcardContainers = [
-    document.getElementById("vmess-wildcard-container"),
-    document.getElementById("vless-wildcard-container"),
-    document.getElementById("trojan-wildcard-container"),
-    document.getElementById("ss-wildcard-container"),
-  ];
-
-  const wildcardCheckboxes = [
-    document.getElementById("vmess-wildcard"),
-    document.getElementById("vless-wildcard"),
-    document.getElementById("trojan-wildcard"),
-    document.getElementById("ss-wildcard"),
-  ];
-
-  // Add event listeners to bug selects
+// Fungsi reset bug dan wildcard supaya gak nyangkut antar tab
+function resetBugAndWildcardStates() {
   bugInputs.forEach((select, index) => {
-    const manualContainerId = select.id.replace(
-      "-bug",
-      "-manual-bug-container"
+    const manualContainer = document.getElementById(
+      select.id.replace("-bug", "-manual-bug-container")
     );
-    const manualContainer = document.getElementById(manualContainerId);
-    const manualInput = document.getElementById(
-      select.id.replace("-bug", "-manual-bug")
-    );
+    const wildcardContainer = wildcardContainers[index];
     const wildcardCheckbox = wildcardCheckboxes[index];
 
-    select.addEventListener("change", function () {
-      if (this.value === "manual") {
-        manualContainer.classList.add("show");
-        wildcardContainers[index].classList.remove("show"); // Hide wildcard container
-        wildcardCheckbox.checked = false; // Uncheck the wildcard checkbox
-        wildcardCheckbox.disabled = true; // Disable the wildcard checkbox
-      } else if (this.value !== "") {
-        manualContainer.classList.remove("show");
-        wildcardContainers[index].classList.add("show");
-        wildcardCheckbox.disabled = false; // Enable the wildcard checkbox
-      } else {
-        manualContainer.classList.remove("show");
-        wildcardContainers[index].classList.remove("show");
-        wildcardCheckbox.checked = false;
-        wildcardCheckbox.disabled = false; // Reset the disabled state
-      }
-    });
-
-    if (manualInput) {
-      manualInput.addEventListener("input", () => {
-        // Don't show wildcard container for manual input
-        wildcardCheckbox.disabled = true;
-      });
+    // Reset ke kondisi awal
+    if (manualContainer) manualContainer.classList.remove("show");
+    if (wildcardContainer) wildcardContainer.classList.remove("show");
+    if (wildcardCheckbox) {
+      wildcardCheckbox.checked = false;
+      wildcardCheckbox.disabled = false;
     }
   });
+}
+
+// Populate server domain dropdowns
+const serverDomainSelects = [
+  document.getElementById("vmess-server-domain"),
+  document.getElementById("vless-server-domain"),
+  document.getElementById("trojan-server-domain"),
+  document.getElementById("ss-server-domain"),
+];
+
+serverDomainSelects.forEach((select) => {
+  if (select) {
+    select.innerHTML = "";
+    serverDomains.forEach((domain) => {
+      const option = document.createElement("option");
+      option.value = domain;
+      option.textContent = domain;
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", function () {
+      selectedServerDomain = this.value;
+    });
+  }
+});
+
+// Populate bug options
+populateBugOptions();
+
+// Forms
+const forms = [
+  document.getElementById("vmess-account-form"),
+  document.getElementById("vless-account-form"),
+  document.getElementById("trojan-account-form"),
+  document.getElementById("ss-account-form"),
+];
+
+// Bug & Wildcard logic
+const bugInputs = [
+  document.getElementById("vmess-bug"),
+  document.getElementById("vless-bug"),
+  document.getElementById("trojan-bug"),
+  document.getElementById("ss-bug"),
+];
+
+const wildcardContainers = [
+  document.getElementById("vmess-wildcard-container"),
+  document.getElementById("vless-wildcard-container"),
+  document.getElementById("trojan-wildcard-container"),
+  document.getElementById("ss-wildcard-container"),
+];
+
+const wildcardCheckboxes = [
+  document.getElementById("vmess-wildcard"),
+  document.getElementById("vless-wildcard"),
+  document.getElementById("trojan-wildcard"),
+  document.getElementById("ss-wildcard"),
+];
+
+// Listener untuk dropdown bug
+bugInputs.forEach((select, index) => {
+  const manualContainer = document.getElementById(
+    select.id.replace("-bug", "-manual-bug-container")
+  );
+  const manualInput = document.getElementById(
+    select.id.replace("-bug", "-manual-bug")
+  );
+  const wildcardContainer = wildcardContainers[index];
+  const wildcardCheckbox = wildcardCheckboxes[index];
+
+  select.addEventListener("change", function () {
+    if (this.value === "manual") {
+      if (manualContainer) manualContainer.classList.add("show");
+      if (wildcardContainer) wildcardContainer.classList.remove("show");
+      if (wildcardCheckbox) {
+        wildcardCheckbox.checked = false;
+        wildcardCheckbox.disabled = true;
+      }
+    } else if (this.value !== "") {
+      if (manualContainer) manualContainer.classList.remove("show");
+      if (wildcardContainer) wildcardContainer.classList.add("show");
+      if (wildcardCheckbox) wildcardCheckbox.disabled = false;
+    } else {
+      if (manualContainer) manualContainer.classList.remove("show");
+      if (wildcardContainer) wildcardContainer.classList.remove("show");
+      if (wildcardCheckbox) {
+        wildcardCheckbox.checked = false;
+        wildcardCheckbox.disabled = false;
+      }
+    }
+  });
+
+  if (manualInput) {
+    manualInput.addEventListener("input", () => {
+      if (wildcardCheckbox) wildcardCheckbox.disabled = true;
+    });
+  }
+});
+
 
   forms.forEach((form) => {
     form.addEventListener("submit", (e) => {
