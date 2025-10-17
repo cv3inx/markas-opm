@@ -4,49 +4,49 @@
 
 // Set current year in footer
 document.addEventListener("DOMContentLoaded", () => {
-  const currentYearElements = document.querySelectorAll("#current-year")
-  const currentYear = new Date().getFullYear()
+  const currentYearElements = document.querySelectorAll("#current-year");
+  const currentYear = new Date().getFullYear();
 
   currentYearElements.forEach((element) => {
-    element.textContent = currentYear
-  })
-})
+    element.textContent = currentYear;
+  });
+});
 
 // Donation modal functionality
 document.addEventListener("DOMContentLoaded", () => {
-  const donationButton = document.getElementById("donation-button")
-  const donationModal = document.getElementById("donation-modal")
-  const closeButton = document.getElementById("close-donation")
-  const donationBackdrop = document.getElementById("donation-backdrop")
+  const donationButton = document.getElementById("donation-button");
+  const donationModal = document.getElementById("donation-modal");
+  const closeButton = document.getElementById("close-donation");
+  const donationBackdrop = document.getElementById("donation-backdrop");
 
   if (donationButton && donationModal) {
     // Open donation modal
     donationButton.addEventListener("click", () => {
-      donationModal.classList.add("active")
-    })
+      donationModal.classList.add("active");
+    });
 
     // Close donation modal
     if (closeButton) {
       closeButton.addEventListener("click", () => {
-        donationModal.classList.remove("active")
-      })
+        donationModal.classList.remove("active");
+      });
     }
 
     // Close modal when clicking on backdrop
     if (donationBackdrop) {
       donationBackdrop.addEventListener("click", () => {
-        donationModal.classList.remove("active")
-      })
+        donationModal.classList.remove("active");
+      });
     }
 
     // Close modal with Escape key
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && donationModal.classList.contains("active")) {
-        donationModal.classList.remove("active")
+        donationModal.classList.remove("active");
       }
-    })
+    });
   }
-})
+});
 
 /**
  * Generate a UUID v4
@@ -54,10 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 function generateUUIDv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }
 
 /**
@@ -68,11 +68,12 @@ function generateUUIDv4() {
 function safeBase64Encode(str) {
   try {
     // Make sure we're working with a string
-    const stringToEncode = typeof str === "object" ? JSON.stringify(str) : String(str)
-    return window.btoa(stringToEncode)
+    const stringToEncode =
+      typeof str === "object" ? JSON.stringify(str) : String(str);
+    return window.btoa(stringToEncode);
   } catch (e) {
-    console.error("Base64 encoding error:", e)
-    return ""
+    console.error("Base64 encoding error:", e);
+    return "";
   }
 }
 
@@ -88,8 +89,8 @@ function formatDate(date) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }
-  return date.toLocaleDateString("en-US", options)
+  };
+  return date.toLocaleDateString("en-US", options);
 }
 
 /**
@@ -100,25 +101,25 @@ function formatDate(date) {
 async function copyToClipboard(text) {
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text)
-      return true
+      await navigator.clipboard.writeText(text);
+      return true;
     } else {
       // Fallback for older browsers
-      const textArea = document.createElement("textarea")
-      textArea.value = text
-      textArea.style.position = "fixed"
-      textArea.style.left = "-999999px"
-      textArea.style.top = "-999999px"
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      const success = document.execCommand("copy")
-      document.body.removeChild(textArea)
-      return success
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      return success;
     }
   } catch (err) {
-    console.error("Failed to copy text: ", err)
-    return false
+    console.error("Failed to copy text: ", err);
+    return false;
   }
 }
 
@@ -130,54 +131,55 @@ async function copyToClipboard(text) {
  */
 function showToast(message, type = "info", duration = 3000) {
   // Check if toast container exists, create if not
-  let toastContainer = document.getElementById("toast-container")
+  let toastContainer = document.getElementById("toast-container");
 
   if (!toastContainer) {
-    toastContainer = document.createElement("div")
-    toastContainer.id = "toast-container"
-    toastContainer.style.position = "fixed"
-    toastContainer.style.bottom = "20px"
-    toastContainer.style.right = "20px"
-    toastContainer.style.zIndex = "9999"
-    document.body.appendChild(toastContainer)
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-container";
+    toastContainer.style.position = "fixed";
+    toastContainer.style.bottom = "20px";
+    toastContainer.style.right = "20px";
+    toastContainer.style.zIndex = "9999";
+    document.body.appendChild(toastContainer);
   }
 
   // Create toast element
-  const toast = document.createElement("div")
-  toast.className = `toast toast-${type}`
-  toast.style.minWidth = "250px"
-  toast.style.margin = "10px 0"
-  toast.style.padding = "15px"
-  toast.style.borderRadius = "8px"
-  toast.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)"
-  toast.style.display = "flex"
-  toast.style.alignItems = "center"
-  toast.style.justifyContent = "space-between"
-  toast.style.animation = "fadeIn 0.3s, fadeOut 0.3s " + (duration / 1000 - 0.3) + "s forwards"
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.style.minWidth = "250px";
+  toast.style.margin = "10px 0";
+  toast.style.padding = "15px";
+  toast.style.borderRadius = "8px";
+  toast.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+  toast.style.display = "flex";
+  toast.style.alignItems = "center";
+  toast.style.justifyContent = "space-between";
+  toast.style.animation =
+    "fadeIn 0.3s, fadeOut 0.3s " + (duration / 1000 - 0.3) + "s forwards";
 
   // Set background color based on type
   switch (type) {
     case "success":
-      toast.style.backgroundColor = "rgba(16, 185, 129, 0.9)"
-      break
+      toast.style.backgroundColor = "rgba(16, 185, 129, 0.9)";
+      break;
     case "error":
-      toast.style.backgroundColor = "rgba(239, 68, 68, 0.9)"
-      break
+      toast.style.backgroundColor = "rgba(239, 68, 68, 0.9)";
+      break;
     default:
-      toast.style.backgroundColor = "rgba(99, 102, 241, 0.9)"
+      toast.style.backgroundColor = "rgba(99, 102, 241, 0.9)";
   }
 
   // Add icon based on type
-  let icon = ""
+  let icon = "";
   switch (type) {
     case "success":
-      icon = '<i class="fas fa-check-circle"></i>'
-      break
+      icon = '<i class="fas fa-check-circle"></i>';
+      break;
     case "error":
-      icon = '<i class="fas fa-exclamation-circle"></i>'
-      break
+      icon = '<i class="fas fa-exclamation-circle"></i>';
+      break;
     default:
-      icon = '<i class="fas fa-info-circle"></i>'
+      icon = '<i class="fas fa-info-circle"></i>';
   }
 
   // Set toast content
@@ -189,21 +191,21 @@ function showToast(message, type = "info", duration = 3000) {
         <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;">
             <i class="fas fa-times"></i>
         </button>
-    `
+    `;
 
   // Add close button functionality
-  const closeButton = toast.querySelector("button")
+  const closeButton = toast.querySelector("button");
   closeButton.addEventListener("click", () => {
-    toastContainer.removeChild(toast)
-  })
+    toastContainer.removeChild(toast);
+  });
 
   // Add toast to container
-  toastContainer.appendChild(toast)
+  toastContainer.appendChild(toast);
 
   // Add CSS for animations if not already added
   if (!document.getElementById("toast-styles")) {
-    const style = document.createElement("style")
-    style.id = "toast-styles"
+    const style = document.createElement("style");
+    style.id = "toast-styles";
     style.textContent = `
             @keyframes fadeIn {
                 from { opacity: 0; transform: translateY(20px); }
@@ -213,16 +215,16 @@ function showToast(message, type = "info", duration = 3000) {
                 from { opacity: 1; transform: translateY(0); }
                 to { opacity: 0; transform: translateY(-20px); }
             }
-        `
-    document.head.appendChild(style)
+        `;
+    document.head.appendChild(style);
   }
 
   // Remove toast after duration
   setTimeout(() => {
     if (toastContainer.contains(toast)) {
-      toastContainer.removeChild(toast)
+      toastContainer.removeChild(toast);
     }
-  }, duration)
+  }, duration);
 }
 
 /**
@@ -230,7 +232,7 @@ function showToast(message, type = "info", duration = 3000) {
  * @param {string} elementId - ID of the element to update
  */
 function generateUUID(elementId) {
-  document.getElementById(elementId).value = generateUUIDv4()
+  document.getElementById(elementId).value = generateUUIDv4();
 }
 
 /**
@@ -238,5 +240,5 @@ function generateUUID(elementId) {
  * @param {string} elementId - ID of the element to update
  */
 function generatePassword(elementId) {
-  document.getElementById(elementId).value = generateUUIDv4()
+  document.getElementById(elementId).value = generateUUIDv4();
 }

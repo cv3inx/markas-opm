@@ -1,212 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" data-theme="black">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZEROSTORE || Subscription</title>
-    
-    <!-- Favicon -->
+    <title>Markas OPM || Subscription</title>
+
     <link rel="icon" href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png"/>
-    
-    <!-- Fonts -->
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/sub.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* This style is now in common.css */
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+
+        .body-bg {
+            background-color: #0a0a0a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .glass-pane {
+            background: rgba(18, 18, 18, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="card">
-            <div class="tech-detail tech-detail-1"></div>
-            <div class="tech-detail tech-detail-2"></div>
-            <div class="tech-detail tech-detail-3"></div>
-            
-            <div class="title-container">
-                <h1 class="title">ZEROSTORE</h1>
-                <p class="subtitle">Advanced Subscription Link Generator</p>
-            </div>
 
-            <div class="nav-buttons">
-                <a href="/" class="nav-button">
-                    <i class="fas fa-home"></i> Home
-                </a>
-                <a href="sub" class="nav-button active">
-                    <i class="fas fa-rss"></i> Subscription
-                </a>
-                <a href="link" class="nav-button">
-                    <i class="fas fa-link"></i> Link Generator
-                </a>
-                <a href="converter" class="nav-button">
-                    <i class="fas fa-exchange-alt"></i> Converter
-                </a>
-            </div>
-            
-            <form id="subLinkForm">
-                <div class="form-group">
-                    <label for="configType">PROTOCOL TYPE</label>
-                    <select id="configType" class="form-control" required>
-                        <option value="vless">VLESS</option>
-                        <option value="vmess">VMESS</option>
-                        <option value="trojan">TROJAN</option>
-                        <option value="shadowsocks">SHADOWSOCKS</option>
-                        <option value="mix">MIX (ALL PROTOCOLS)</option>
-                    </select>
-                </div>
+<body class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white">
 
-                <div class="form-group">
-                    <label for="formatType">FORMAT TYPE</label>
-                    <select id="formatType" class="form-control" required>
-                        <option value="v2ray">Link V2RAY</option>
-                        <option value="clash">Proxy_Provider CLASH</option>
-                    </select>
-                </div>
-                
-                <div class="form-group uuid-group">
-                    <label for="uuid">UUID</label>
-                    <input type="text" id="uuid" class="form-control" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
-                    <button type="button" id="generateUuid" class="uuid-generate">GENERATE</button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="bugType">BUG TYPE</label>
-                    <select id="bugType" class="form-control" required>
-                        <option value="default">DIRECT</option>
-                        <option value="non-wildcard">NON-WILDCARD</option>
-                        <option value="wildcard">WILDCARD</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="mainDomain">MAIN DOMAIN <span class="info-badge">SELECT</span></label>
-                    <select id="mainDomain" class="form-control" required>
-                        <!-- Will be populated from MainDomains array -->
-                    </select>
-                </div>
-                
-                <div id="customBugContainer" class="form-group custom-bug-container">
-                    <label for="customBug">CUSTOM BUG</label>
-                    <input type="text" id="customBug" class="form-control" placeholder="Example : memek.com, contol.com, tytyd.me">
-                    <div class="select-info">Pisah Dengan Koma Jika Ingin Banyak BUG sekaligus</div>
-                    <div class="select-info">Supported Wildcard : ava.game.naver.com, quiz.int.vidio.com, zaintest.vuclip.com, support.zoom.us, cache.netflix.com</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="tls">TLS ENCRYPTION</label>
-                    <select id="tls" class="form-control">
-                        <option value="true">ENABLED</option>
-                        <option value="false">DISABLED</option>
-                    </select>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="country">REGION FILTER</label>
-                        <select id="country" class="form-control">
-                            <option value="">Loading regions...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="limit">QUANTITY</label>
-                        <input type="number" id="limit" class="form-control" min="1" max="50" value="5" placeholder="Max 50" required>
-                    </div>
-                </div>
-                
-                <div class="form-group validation-group">
-                    <label class="form-check">
-                        <input type="checkbox" id="validateProxies" class="form-check-input" checked>
-                        <span class="form-check-label">Filter ProxyIP ACTIVE Untuk Subscription?</span>
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn">Generate Configuration</button>
-            </form>
-            
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <div class="loading-text typing">Fetching proxy data and generating configs...</div>
-            </div>
-            
-            <div id="validation-status" class="validation-status">
-                <div>Validating proxies... <span id="validation-count">0/0</span></div>
-                <div class="validation-progress">
-                    <div id="validation-bar" class="validation-bar"></div>
-                </div>
-                <div class="validation-stats">
-                    <div>Valid: <span id="valid-count">0</span></div>
-                    <div>Invalid: <span id="invalid-count">0</span></div>
-                </div>
-            </div>
-            
-            <div id="error-message" class="error-message"></div>
-            
-            <div id="result" class="result">
-                <div class="result-header">
-                    <div class="result-title">CONFIGURATION GENERATED</div>
-                </div>
-                <div class="output-container">
-                    <textarea id="output" class="output" readonly></textarea>
-                </div>
-                <button id="copyLink" class="copy-btn">
-                    <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    COPY CONFIGURATION
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <footer class="footer">
-        <div class="circuit-line circuit-line-1"></div>
-        <div class="circuit-line circuit-line-2"></div>
-        <div class="circuit-line circuit-line-3"></div>
-        <div class="circuit-line circuit-line-4"></div>
-        <div class="circuit-dot circuit-dot-1"></div>
-        <div class="circuit-dot circuit-dot-2"></div>
-        <div class="circuit-dot circuit-dot-3"></div>
-        <div class="circuit-dot circuit-dot-4"></div>
+    <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
         
-        <div class="footer-logo">ZEROSTORE</div>
-        <div class="footer-powered">POWERED BY SECURE TECHNOLOGY</div>
-        <div class="footer-social">
-            <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-                <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                    <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-                </svg>
-                @kakatiri
-            </a>
-        </div>    
-        <div class="footer-social">
-            <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-                <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                    <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-                </svg>
-                @kakatiri
-            </a>
-            <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-                <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                    <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-                </svg>
-                @kakatiri
-            </a>
-        </div>
-        <div class="footer-year">© <span id="current-year"></span></div>
-    </footer>
+        <div class="card glass-pane shadow-2xl rounded-2xl">
+            <div class="card-body p-6 md:p-8">
+                
+                <header class="text-center mb-6">
+                    <h1 class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                        MARKAS OPM
+                    </h1>
+                    <p class="text-white/60 tracking-widest mt-1 text-sm">SUBSCRIPTION GENERATOR</p>
+                </header>
+                
+                <nav role="tablist" class="tabs tabs-bordered">
+                    <a role="tab" href="/" class="tab text-lg">Home</a>
+                    <a role="tab" class="tab tab-active text-lg">Subscription</a>
+                    <a role="tab" href="link" class="tab text-lg">Link Generator</a>
+                </nav>
 
-    <!-- JavaScript -->
+                <div class="divider text-white/40 my-6 text-sm">CONFIGURATION</div>
+
+                <form id="subLinkForm" class="space-y-4">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Protocol Type</span></label>
+                            <select id="configType" class="select select-bordered w-full" required>
+                                <option value="vless">VLESS</option>
+                                <option value="vmess">VMESS</option>
+                                <option value="trojan">TROJAN</option>
+                                <option value="shadowsocks">SHADOWSOCKS</option>
+                                <option value="mix">MIX (ALL)</option>
+                            </select>
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Format Type</span></label>
+                            <select id="formatType" class="select select-bordered w-full" required>
+                                <option value="v2ray">Link V2RAY</option>
+                                <option value="clash">Proxy_Provider CLASH</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-control w-full uuid-group">
+                        <label class="label"><span class="label-text">UUID</span></label>
+                        <div class="join w-full">
+                            <input type="text" id="uuid" class="input input-bordered join-item w-full" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
+                            <button type="button" id="generateUuid" class="btn btn-neutral join-item">Generate</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Bug Type</span></label>
+                            <select id="bugType" class="select select-bordered w-full" required>
+                                <option value="default">DIRECT</option>
+                                <option value="non-wildcard">NON-WILDCARD</option>
+                                <option value="wildcard">WILDCARD</option>
+                            </select>
+                        </div>
+                         <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Main Domain</span></label>
+                            <select id="mainDomain" class="select select-bordered w-full" required></select>
+                        </div>
+                    </div>
+
+                    <div id="customBugContainer" class="form-control w-full custom-bug-container">
+                        <label class="label"><span class="label-text">Custom Bug</span></label>
+                        <textarea id="customBug" class="textarea textarea-bordered" placeholder="Pisahkan dengan koma jika lebih dari satu, cth: bug1.com,bug2.com"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">TLS</span></label>
+                            <select id="tls" class="select select-bordered w-full">
+                                <option value="true">ENABLED</option>
+                                <option value="false">DISABLED</option>
+                            </select>
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Region Filter</span></label>
+                            <select id="country" class="select select-bordered w-full"><option value="">Loading...</option></select>
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"><span class="label-text">Quantity</span></label>
+                            <input type="number" id="limit" class="input input-bordered w-full" min="1" max="50" value="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" id="validateProxies" class="checkbox checkbox-neutral" checked />
+                            <span class="label-text">Filter Active Proxies Only</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-neutral w-full !mt-6">Generate Subscription</button>
+                </form>
+                
+                <div id="loading" class="text-center py-6 hidden">
+                    <span class="loading loading-dots loading-lg"></span>
+                    <p id="loading-text" class="text-white/60 mt-2 text-sm">Fetching proxy data...</p>
+                </div>
+
+                <div id="validation-status" class="space-y-3 hidden">
+                    <div class="text-center text-sm">Validating proxies... <span id="validation-count">0/0</span></div>
+                    <progress id="validation-bar" class="progress progress-info w-full" value="0" max="100"></progress>
+                    <div class="flex justify-between text-xs">
+                        <div class="text-success">Valid: <span id="valid-count">0</span></div>
+                        <div class="text-error">Invalid: <span id="invalid-count">0</span></div>
+                    </div>
+                </div>
+
+                <div id="error-message" class="alert alert-error hidden"></div>
+
+                <div id="result" class="hidden">
+                    <div class="divider text-white/40 my-6 text-sm">RESULT</div>
+                    <textarea id="output" class="textarea textarea-bordered w-full font-mono text-xs" readonly rows="6"></textarea>
+                    <button id="copyLink" class="btn btn-outline w-full mt-4"><i class="far fa-copy"></i> COPY CONFIGURATION</button>
+                </div>
+
+            </div>
+        </div>
+        
+        <footer class="text-center p-4 mt-4 text-sm text-white/50">
+            <p>© <span id="current-year"></span> MARKAS OPM PROJECT —
+                <a href="https://t.me/shouwee" class="link link-hover text-white/80" target="_blank">Contact Admin</a>
+            </p>
+        </footer>
+    </main>
+
+    <button class="btn btn-neutral btn-circle fixed bottom-4 right-4 animate-pulse" onclick="donation_modal.showModal()">
+        <i class="fas fa-hand-holding-heart text-xl"></i>
+    </button>
+    <dialog id="donation_modal" class="modal">
+        <div class="modal-box text-center glass-pane">
+            <h3 class="font-bold text-lg font-orbitron">Support Us!</h3>
+            <p class="py-4 text-white/80">Your donation keeps our services running. Thank you! 🙏</p>
+            <div class="bg-white p-2 rounded-lg inline-block">
+                <img src="https://x.botwa.net/f/POzuPGfJ42ir.png" alt="QR Code" class="w-full max-w-xs mx-auto">
+            </div>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-outline w-full">Close</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
     <script src="js/common.js"></script>
     <script src="js/sub.js"></script>
+
 </body>
 </html>

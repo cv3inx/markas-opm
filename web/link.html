@@ -1,631 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id" data-theme="black">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZEROSTORE || Link Generator</title>
-    
-    <!-- Favicon -->
+    <title>Markas OPM || Link Generator</title>
+
     <link rel="icon" href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png">
-    
-    <!-- Meta tags -->
-    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/akulelaki696/bg/refs/heads/main/20250106_010158.jpg"/>
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)"/>
-    <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Fonts -->
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/link.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Using common styles from common.css */
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+
+        .body-bg {
+            background-color: #0a0a0a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .glass-pane {
+            background: rgba(18, 18, 18, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .proxy-card {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .proxy-card:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
-<body>
-    <div class="container" style="width: 100%; max-width: 480px; padding: 0 0.75rem; margin-bottom: 1rem;">
-        <div class="card">
-            <div class="tech-detail tech-detail-1"></div>
-            <div class="tech-detail tech-detail-2"></div>
-            <div class="tech-detail tech-detail-3"></div>
-            
-            <div class="title-container">
-                <h1 class="title">ZEROSTORE</h1>
-                <p class="subtitle">Advanced Link Generator</p>
-            </div>
 
-            <div class="nav-buttons">
-                <a href="/" class="nav-button">
-                    <i class="fas fa-home"></i> Home
-                </a>
-                <a href="sub" class="nav-button">
-                    <i class="fas fa-rss"></i> Subscription
-                </a>
-                <a href="link" class="nav-button active">
-                    <i class="fas fa-link"></i> Link Generator
-                </a>
-                <a href="converter" class="nav-button">
-                    <i class="fas fa-exchange-alt"></i> Converter
-                </a>
-            </div>
-            
-            <div class="p-4">
-                <!-- Proxy List Section -->
-                <div id="proxy-list-section">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5">
-                        <div class="flex items-center mb-3 sm:mb-0">
-                            <i class="fas fa-server mr-2 text-indigo-400"></i>
-                            <h2 class="text-xl font-semibold">Proxy List</h2>
-                        </div>
-                        <div class="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-3">
-                            <button id="refresh-btn" class="primary-btn py-2 px-4 rounded-lg flex items-center justify-center text-sm">
-                                <i class="fas fa-sync-alt mr-2"></i>Refresh
-                            </button>
-                            <button id="custom-url-btn" class="secondary-btn py-2 px-4 rounded-lg flex items-center justify-center text-sm">
-                                <i class="fas fa-link mr-2"></i>URL
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="custom-url-input" class="mb-5 hidden">
-                        <div class="flex">
-                            <input type="text" id="proxy-url" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" 
-                                placeholder="Enter custom proxy list URL" t
-                                value="https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt">
-                            <button id="load-custom-url" class="primary-btn px-4 py-2.5 rounded-r-lg">
-                                Load
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="loading-indicator" class="text-center py-10 hidden">
-                        <div class="loading-spinner mx-auto mb-4"></div>
-                        <p class="text-indigo-300 text-sm">Loading proxy list...</p>
-                    </div>
-                    
-                    <!-- Search input -->
-                    <div class="mb-4">
-                        <div class="relative">
-                            <input type="text" id="search-input" class="w-full pl-10 pr-4 py-2.5 glass-input rounded-lg text-sm" placeholder="Search by provider or country...">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
+<body class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white">
+
+    <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
+        
+        <div class="card glass-pane shadow-2xl rounded-2xl">
+            <div class="card-body p-6 md:p-8">
+                
+                <header class="text-center mb-6">
+                    <h1 class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                        MARKAS OPM
+                    </h1>
+                    <p class="text-white/60 tracking-widest mt-1 text-sm">LINK GENERATOR</p>
+                </header>
+                
+                <nav role="tablist" class="tabs tabs-bordered">
+                    <a role="tab" href="/" class="tab text-lg">Home</a>
+                    <a role="tab" href="sub" class="tab text-lg">Subscription</a>
+                    <a role="tab" class="tab tab-active text-lg">Generator</a>
+                </nav>
+
+                <div class="mt-6">
+                    <div id="proxy-list-section">
+                        <div class="divider text-white/40 text-sm">SELECT PROXY</div>
+                        <div class="flex flex-col sm:flex-row gap-3 justify-between items-center mb-4">
+                            <label class="input input-bordered flex items-center gap-2 w-full sm:w-auto flex-grow">
+                                <i class="fas fa-search text-white/40"></i>
+                                <input type="text" id="search-input" class="grow bg-transparent" placeholder="Search provider/country...">
+                            </label>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <button id="refresh-btn" class="btn btn-neutral flex-grow"><i class="fas fa-sync-alt"></i>Refresh</button>
+                                <button id="custom-url-btn" class="btn btn-ghost"><i class="fas fa-link"></i>URL</button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Mobile-friendly proxy list -->
-                    <div id="proxy-list-container" class="mt-4">
-                        <!-- Proxy cards will be populated here -->
-                    </div>
-                    
-                    <!-- Pagination controls -->
-                    <div id="pagination-container" class="flex justify-center items-center mt-6 space-x-2">
-                        <!-- Pagination buttons will be added here -->
+
+                        <div id="custom-url-input" class="mb-4 hidden">
+                            <div class="join w-full">
+                                <input type="text" id="proxy-url" class="input input-bordered join-item w-full" value="https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt">
+                                <button id="load-custom-url" class="btn btn-neutral join-item">Load</button>
+                            </div>
+                        </div>
+                        
+                        <div id="loading-indicator" class="text-center py-10 hidden">
+                            <span class="loading loading-ring loading-lg"></span>
+                            <p class="text-white/60 mt-2">Loading proxy list...</p>
+                        </div>
+                        <div id="proxy-list-container" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
+                        <div id="no-proxies-message" class="text-center py-10 hidden">
+                            <i class="fas fa-exclamation-circle text-error text-4xl mb-3"></i>
+                            <p class="text-white/70">No proxies found.</p>
+                        </div>
+                        
+                        <div id="pagination-container" class="flex justify-center items-center mt-4">
+                            </div>
+                        <div id="proxy-count-info" class="text-center mt-2 text-sm text-white/50"></div>
                     </div>
 
-                    <!-- Proxy count info -->
-                    <div id="proxy-count-info" class="text-center mt-3 text-sm text-gray-400">
-                        <!-- Proxy count will be shown here -->
-                    </div>
-                    
-                    <div id="no-proxies-message" class="text-center py-10 hidden">
-                        <i class="fas fa-exclamation-circle text-rose-400 text-4xl mb-3"></i>
-                        <p class="text-gray-300 text-sm">No proxies found. Please refresh or try a different URL.</p>
-                    </div>
-                </div>
-                
-                <!-- Account Creation Section -->
-                <div id="account-creation-section" class="mt-6 hidden">
-                    <div class="pt-4">
-                        <div class="divider mb-6"></div>
-                        <div class="flex justify-between items-center mb-5">
-                            <div class="flex items-center">
-                                <i class="fas fa-user-plus mr-2 text-indigo-400"></i>
-                                <h2 class="text-xl font-semibold">Create Account</h2>
-                            </div>
-                            <button id="back-to-list" class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors text-sm">
-                                <i class="fas fa-arrow-left mr-2"></i> Back to List
-                            </button>
+                    <div id="account-creation-section" class="hidden">
                         </div>
-                        
-                        <div class="card p-5 mb-6 overflow-hidden relative">
-                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
-                            
-                            <h3 class="text-base font-medium text-indigo-400 mb-4 flex items-center">
-                                <i class="fas fa-server mr-2"></i>
-                                Selected Proxy
-                            </h3>
-                            
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                                    <i class="fas fa-building text-indigo-400/70 w-5 text-center"></i>
-                                    <div>
-                                        <div class="text-xs text-gray-400">Provider</div>
-                                        <div id="selected-provider" class="text-sm font-medium text-white">-</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                                    <i class="fas fa-globe-americas text-indigo-400/70 w-5 text-center"></i>
-                                    <div>
-                                        <div class="text-xs text-gray-400">Country</div>
-                                        <div id="selected-country" class="text-sm font-medium text-white">-</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                                    <i class="fas fa-network-wired text-indigo-400/70 w-5 text-center"></i>
-                                    <div>
-                                        <div class="text-xs text-gray-400">IP</div>
-                                        <div id="selected-ip" class="text-sm font-medium text-white">-</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2 bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                                    <i class="fas fa-plug text-indigo-400/70 w-5 text-center"></i>
-                                    <div>
-                                        <div class="text-xs text-gray-400">Port</div>
-                                        <div id="selected-port" class="text-sm font-medium text-white">-</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div id="proxy-status-container" class="hidden">
-                                <div id="proxy-status-active" class="hidden rounded-lg p-3 bg-gradient-to-r from-emerald-900/20 to-emerald-800/10 border border-emerald-500/20">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mr-3 border border-emerald-500/30">
-                                            <i class="fas fa-check text-emerald-400"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-emerald-400">ACTIVE</div>
-                                            <div class="text-xs text-gray-400">Latency: <span id="proxy-latency" class="text-amber-400">0ms</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div id="proxy-status-dead" class="hidden rounded-lg p-3 bg-gradient-to-r from-rose-900/20 to-rose-800/10 border border-rose-500/20">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center mr-3 border border-rose-500/30">
-                                            <i class="fas fa-times text-rose-500"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-rose-500">DEAD</div>
-                                            <div class="text-xs text-gray-400">This proxy may not be working</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div id="proxy-status-unknown" class="hidden rounded-lg p-3 bg-gradient-to-r from-amber-900/20 to-amber-800/10 border border-amber-500/20">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center mr-3 border border-amber-500/30">
-                                            <i class="fas fa-question text-amber-400"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-amber-400">UNKNOWN</div>
-                                            <div class="text-xs text-gray-400">Could not check proxy status</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div id="proxy-status-loading" class="rounded-lg p-3 bg-gradient-to-r from-indigo-900/20 to-indigo-800/10 border border-indigo-500/20">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center mr-3 border border-indigo-500/30">
-                                            <div class="loading-spinner-sm"></div>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-indigo-400">CHECKING</div>
-                                            <div class="text-xs text-gray-400">Verifying proxy status...</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
+                    <div id="result-section" class="hidden">
                         </div>
-                        
-                        <!-- Tabs -->
-                        <div class="flex border-b border-gray-700 mb-6 overflow-x-auto space-x-1 sm:space-x-0">
-                            <button class="tab-btn active py-3 px-4 font-medium text-sm focus:outline-none" data-target="vmess-form">
-                                <i class="fas fa-shield-alt mr-2"></i>VMess
-                            </button>
-                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="vless-form">
-                                <i class="fas fa-bolt mr-2"></i>VLESS
-                            </button>
-                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="trojan-form">
-                                <i class="fas fa-user-secret mr-2"></i>Trojan
-                            </button>
-                            <button class="tab-btn py-3 px-4 font-medium text-sm focus:outline-none" data-target="ss-form">
-                                <i class="fas fa-mask mr-2"></i>SS
-                            </button>
-                        </div>
-                        
-                        <!-- VMess Form -->
-                        <div id="vmess-form" class="protocol-form">
-                            <form id="vmess-account-form" class="space-y-5">
-                                <div>
-                                    <label for="vmess-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
-                                    <input type="text" id="vmess-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="vmess-uuid" class="block text-sm font-medium text-gray-300 mb-2">UUID</label>
-                                    <div class="flex">
-                                        <input type="text" id="vmess-uuid" name="uuid" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="1abe4bd9-06f0-4fb7-9173-d4524b056a3a" required>
-                                        <button type="button" onclick="generateUUID('vmess-uuid')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="vmess-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
-                                    <input type="text" id="vmess-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="vmess-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
-                                    <select id="vmess-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <option value="tls">TLS</option>
-                                        <option value="none">None</option>
-                                    </select>
-                                    <input type="hidden" id="vmess-encryption" name="encryption" value="zero">
-                                </div>
-                                
-                                <div>
-                                    <label for="vmess-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
-                                    <select id="vmess-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="vmess-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
-                                    <select id="vmess-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                    <div id="vmess-manual-bug-container" class="wildcard-container">
-                                        <input type="text" id="vmess-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
-                                    </div>
-                                    <div id="vmess-wildcard-container" class="wildcard-container">
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" id="vmess-wildcard" name="wildcard">
-                                            <label for="vmess-wildcard">Gunakan Wildcard (bug.domain.com)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-plus-circle mr-2"></i> Create VMess Account
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <!-- VLESS Form -->
-                        <div id="vless-form" class="protocol-form hidden">
-                            <form id="vless-account-form" class="space-y-5">
-                                <div>
-                                    <label for="vless-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
-                                    <input type="text" id="vless-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="vless-uuid" class="block text-sm font-medium text-gray-300 mb-2">UUID</label>
-                                    <div class="flex">
-                                        <input type="text" id="vless-uuid" name="uuid" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="1abe4bd9-06f0-4fb7-9173-d4524b056a3a" required>
-                                        <button type="button" onclick="generateUUID('vless-uuid')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="vless-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
-                                    <input type="text" id="vless-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="vless-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
-                                    <select id="vless-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <option value="tls">TLS</option>
-                                        <option value="none">None</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="vless-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
-                                    <select id="vless-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="vless-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
-                                    <select id="vless-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                    <div id="vless-manual-bug-container" class="wildcard-container">
-                                        <input type="text" id="vless-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
-                                    </div>
-                                    <div id="vless-wildcard-container" class="wildcard-container">
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" id="vless-wildcard" name="wildcard">
-                                            <label for="vless-wildcard">Gunakan Wildcard (bug.domain.com)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-plus-circle mr-2"></i> Create VLESS Account
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <!-- Trojan Form -->
-                        <div id="trojan-form" class="protocol-form hidden">
-                            <form id="trojan-account-form" class="space-y-5">
-                                <div>
-                                    <label for="trojan-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
-                                    <input type="text" id="trojan-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="trojan-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                                    <div class="flex">
-                                        <input type="text" id="trojan-password" name="password" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
-                                        <button type="button" onclick="generatePassword('trojan-password')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="trojan-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
-                                    <input type="text" id="trojan-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="trojan-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
-                                    <select id="trojan-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <option value="tls">TLS</option>
-                                        <option value="none">None</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="trojan-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
-                                    <select id="trojan-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="trojan-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
-                                    <select id="trojan-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                    <div id="trojan-manual-bug-container" class="wildcard-container">
-                                        <input type="text" id="trojan-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
-                                    </div>
-                                    <div id="trojan-wildcard-container" class="wildcard-container">
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" id="trojan-wildcard" name="wildcard">
-                                            <label for="trojan-wildcard">Gunakan Wildcard (bug.domain.com)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-plus-circle mr-2"></i> Create Trojan Account
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <!-- Shadowsocks Form -->
-                        <div id="ss-form" class="protocol-form hidden">
-                            <form id="ss-account-form" class="space-y-5">
-                                <div>
-                                    <label for="ss-name" class="block text-sm font-medium text-gray-300 mb-2">Account Name</label>
-                                    <input type="text" id="ss-name" name="name" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="ss-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                                    <div class="flex">
-                                        <input type="text" id="ss-password" name="password" class="flex-1 px-4 py-2.5 glass-input rounded-l-lg text-sm" value="bbbbbbbb-zero-store-eeee-ffffffffffff" required>
-                                        <button type="button" onclick="generatePassword('ss-password')" class="secondary-btn px-4 py-2.5 rounded-r-lg hover:bg-slate-700">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label for="ss-path" class="block text-sm font-medium text-gray-300 mb-2">Path</label>
-                                    <input type="text" id="ss-path" name="path" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm" readonly>
-                                </div>
-                                
-                                <div>
-                                    <label for="ss-security" class="block text-sm font-medium text-gray-300 mb-2">TLS</label>
-                                    <select id="ss-security" name="security" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <option value="tls">TLS</option>
-                                        <option value="none">None</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="ss-server-domain" class="block text-sm font-medium text-gray-300 mb-2">Server Domain</label>
-                                    <select id="ss-server-domain" name="server-domain" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="ss-bug" class="block text-sm font-medium text-gray-300 mb-2">Custom Bug <span class="text-xs text-gray-500">(opsional)</span></label>
-                                    <select id="ss-bug" name="bug" class="w-full px-4 py-2.5 glass-select rounded-lg text-sm">
-                                        <!-- Options will be populated dynamically -->
-                                    </select>
-                                    <div id="ss-manual-bug-container" class="wildcard-container">
-                                        <input type="text" id="ss-manual-bug" class="w-full px-4 py-2.5 glass-input rounded-lg text-sm mt-2" placeholder="Enter custom bug domain">
-                                    </div>
-                                    <div id="ss-wildcard-container" class="wildcard-container">
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" id="ss-wildcard" name="wildcard">
-                                            <label for="ss-wildcard">Gunakan Wildcard (bug.domain.com)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <button type="submit" class="w-full primary-btn py-3 px-4 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-plus-circle mr-2"></i> Create Shadowsocks Account
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Result Section -->
-                <div id="result-section" class="mt-6 hidden">
-                    <div class="pt-4">
-                        <div class="divider mb-6"></div>
-                        <div class="flex justify-between items-center mb-5">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle mr-2 text-emerald-400"></i>
-                                <h2 class="text-xl font-semibold">Account Created</h2>
-                            </div>
-                            <button id="back-to-form" class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors text-sm">
-                                <i class="fas fa-arrow-left mr-2"></i> Back
-                            </button>
-                        </div>
-                        
-                        <div class="card p-5 mb-5">
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-base font-medium text-indigo-400">Connection URL</h3>
-                                <button id="copy-url" class="flex items-center text-indigo-400 hover:text-indigo-300 text-xs transition-colors">
-                                    <i class="far fa-copy mr-1"></i> Copy
-                                </button>
-                            </div>
-                            <div id="connection-url" class="text-xs glass-code p-4 rounded-lg break-all font-mono"></div>
-                        </div>
-                        
-                        <div class="card p-5">
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="text-base font-medium text-indigo-400">QR Code</h3>
-                                <button id="download-qr" class="flex items-center text-indigo-400 hover:text-indigo-300 text-xs transition-colors">
-                                    <i class="fas fa-download mr-1"></i> Download
-                                </button>
-                            </div>
-                            <div class="flex justify-center py-4">
-                                <div id="qrcode" class="qrcode-container"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                            <button id="create-new" class="flex-1 primary-btn py-3 px-4 rounded-lg flex items-center justify-center text-sm">
-                                <i class="fas fa-plus-circle mr-2"></i> Create Another
-                            </button>
-                            <button id="back-to-list-from-result" class="flex-1 secondary-btn py-3 px-4 rounded-lg flex items-center justify-center text-sm">
-                                <i class="fas fa-list mr-2"></i> Back to List
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        
+        <footer class="text-center p-4 mt-4 text-sm text-white/50">
+            <p>© <span id="current-year"></span> MARKAS OPM PROJECT —
+                <a href="https://t.me/shouwee" class="link link-hover text-white/80" target="_blank">Contact Admin</a>
+            </p>
+        </footer>
+    </main>
 
-   <footer class="footer">
-       <div class="circuit-line circuit-line-1"></div>
-       <div class="circuit-line circuit-line-2"></div>
-       <div class="circuit-line circuit-line-3"></div>
-       <div class="circuit-line circuit-line-4"></div>
-       <div class="circuit-dot circuit-dot-1"></div>
-       <div class="circuit-dot circuit-dot-2"></div>
-       <div class="circuit-dot circuit-dot-3"></div>
-       <div class="circuit-dot circuit-dot-4"></div>
-       
-       <div class="footer-logo">ZEROSTORE</div>
-       <div class="footer-powered">POWERED BY SECURE TECHNOLOGY</div>
-       <div class="footer-social">
-           <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-               <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                   <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                   <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-               </svg>
-               @kakatiri
-           </a>
-       </div>    
-       <div class="footer-social">
-           <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-               <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                   <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                   <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-               </svg>
-               @kakatiri
-           </a>
-           <a href="https://t.me/kakatiri" class="social-link" target="_blank">
-               <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                   <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.618 2.796 2.503 4.532.545 1.062 1.587 2.739 3.19 2.756 1.26.033 2.052-.6 3.542-1.95a142.91 142.91 0 0 1 2.43-2.053c1.686-.142 3.382-.284 5.12-.436.887-.075 1.92-.262 2.405-1.226.436-.877-.015-1.35-.48-1.874l-3.881-4.369-5.481-6.174S22.185 2.128 21.198 2.433z"></path>
-                   <path d="M18.167 7.068c.237 1.632-1.162 6.872-1.766 8.849"></path>
-               </svg>
-               @kakatiri
-           </a>
-       </div>
-       <div class="footer-year">© <span id="current-year"></span></div>
-   </footer>
-
-    <div id="donation-button" class="donate-btn">
-        <i class="fas fa-hand-holding-heart"></i>
-    </div>
-    
-    <!-- Donation Modal -->
-    <div id="donation-modal" class="donation-modal">
-        <div class="donation-backdrop" id="donation-backdrop"></div>
-        <div class="donation-content" id="donation-content">
-            <!-- Animated border -->
-            <div class="donation-border">
-                <div class="donation-border-animation"></div>
+    <button class="btn btn-neutral btn-circle fixed bottom-4 right-4 animate-pulse" onclick="donation_modal.showModal()">
+        <i class="fas fa-hand-holding-heart text-xl"></i>
+    </button>
+    <dialog id="donation_modal" class="modal">
+        <div class="modal-box text-center glass-pane">
+            <h3 class="font-bold text-lg font-orbitron">Support Us!</h3>
+            <p class="py-4 text-white/80">Your donation keeps our services running. Thank you! 🙏</p>
+            <div class="bg-white p-2 rounded-lg inline-block">
+                <img src="https://x.botwa.net/f/POzuPGfJ42ir.png" alt="QR Code" class="w-full max-w-xs mx-auto">
             </div>
-            
-            <div class="donation-body">
-                <button id="close-donation" class="close-donation">
-                    <i class="fas fa-times"></i>
-                </button>
-                
-                <h3 class="donation-title">Support ZEROSTORE</h3>
-                <p class="donation-text">Your donation helps keep our services running</p>
-                
-                <div class="qris-container">
-                    <!-- Inner animated border -->
-                    <div class="qris-border">
-                        <div class="qris-border-animation"></div>
-                    </div>
-                    <div class="qris-image-container">
-                        <img src="https://raw.githubusercontent.com/cv3inx/markas-opm/main/qris.jpeg" alt="Donation QR Code" class="qris-image">
-                    </div>
-                </div>
-                
-                <p class="donation-small-text">Scan this QR code with your payment app to donate</p>
+            <div class="modal-action">
+                <form method="dialog"><button class="btn btn-outline w-full">Close</button></form>
             </div>
         </div>
-    </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
 
-    <!-- External JavaScript -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    
-    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+        });
+    </script>
     <script src="js/common.js"></script>
     <script src="js/link.js"></script>
+
 </body>
 </html>
