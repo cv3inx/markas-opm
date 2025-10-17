@@ -197,88 +197,58 @@ async fn converter(_: Request, cx: RouteContext<Config>) -> Result<Response> {
 
 // KEEP THE TUNNEL FUNCTION EXACTLY AS IT WAS IN THE ORIGINAL
 async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> {
-    // Ambil parameter proxyip dengan aman
-    let mut proxyip = cx.param("proxyip").unwrap_or("").to_string();
-
-    // Kalau kosong, return clean (tanpa pesan)
-    if proxyip.is_empty() {
-        return Response::empty();
-    }
-
-    // Cek apakah proxyip adalah KV pattern
-    if PROXYKV_PATTERN.is_match(&proxyip) {
-        let kvid_list: Vec<String> = proxyip.split(',').map(|s| s.to_string()).collect();
+    let mut proxyip = cx.param("proxyip").unwrap().to_string();
+    if PROXYKV_PATTERN.is_match(&proxyip)  {
+        let kvid_list: Vec<String> = proxyip.split(",").map(|s| s.to_string()).collect();
         let kv = cx.kv("opm")?;
-        let mut proxy_kv_str = kv.get("proxy_kv").text().await?.unwrap_or_default();
-        let mut rand_buf = [0u8; 1];
-        let _ = getrandom::getrandom(&mut rand_buf);
+        let mut proxy_kv_str = kv.get("proxy_kv").text().await?.unwrap_or("".to_string());
+        let mut rand_buf = [0u8, 1];
+        getrandom::getrandom(&mut rand_buf).expect("failed generating random number");
 
-        // Ambil data proxy dari GitHub kalau belum ada di KV
-        if proxy_kv_str.is_empty() {
+        if proxy_kv_str.len() == 0 {
             console_log!("getting proxy kv from github...");
-            if let Ok(mut res) = Fetch::Url(Url::parse(
-                "https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json",
-            )?)
-            .send()
-            .await
-            {
-                if res.status_code() == 200 {
-                    proxy_kv_str = res.text().await?.to_string();
-                    let _ = kv
-                        .put("proxy_kv", &proxy_kv_str)?
-                        .expiration_ttl(60 * 60 * 24)
-                        .execute()
-                        .await;
-                }
+            let req = Fetch::Url(Url::parse("https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json")?);
+            let mut res = req.send().await?;
+            if res.status_code() == 200 {
+                proxy_kv_str = res.text().await?.to_string();
+                kv.put("proxy_kv", &proxy_kv_str)?.expiration_ttl(60 * 60 * 24).execute().await?; // 24 hours
+            } else {
+                return Err(Error::from(format!("error getting proxy kv: {}", res.status_code())));
             }
         }
 
-        if let Ok(proxy_kv) = serde_json::from_str::<HashMap<String, Vec<String>>>(&proxy_kv_str) {
-            let kv_index = (rand_buf[0] as usize) % kvid_list.len();
-            proxyip = kvid_list[kv_index].clone();
+        let proxy_kv: HashMap<String, Vec<String>> = serde_json::from_str(&proxy_kv_str)?;
 
-            if let Some(list) = proxy_kv.get(&proxyip) {
-                let proxyip_index = (rand_buf[0] as usize) % list.len();
-                proxyip = list[proxyip_index].clone().replace(':', "-");
-            }
-        }
+        let kv_index = (rand_buf[0] as usize) % kvid_list.len();
+        proxyip = kvid_list[kv_index].clone();
+
+        let proxyip_index = (rand_buf[0] as usize) % proxy_kv[&proxyip].len();
+        proxyip = proxy_kv[&proxyip][proxyip_index].clone().replace(":", "-");
     }
 
-    // Update proxy address dan port
     if PROXYIP_PATTERN.is_match(&proxyip) {
         if let Some((addr, port_str)) = proxyip.split_once('-') {
-            if let Ok(port) = port_str.parse::<u16>() {
+            if let Ok(port) = port_str.parse() {
                 cx.data.proxy_addr = addr.to_string();
                 cx.data.proxy_port = port;
             }
         }
     }
 
-    // Cek header Upgrade
-    let upgrade = req.headers().get("Upgrade")?.unwrap_or_default();
-    if upgrade == "websocket" {
+    let upgrade = req.headers().get("Upgrade")?.unwrap_or("".to_string());
+    if upgrade == "websocket".to_string() {
         let WebSocketPair { server, client } = WebSocketPair::new()?;
         server.accept()?;
 
-        // Gunakan spawn_local supaya gak hang di Cloudflare Worker
-        wasm_bindgen_futures::spawn_local({
-            let config = cx.data.clone();
-            async move {
-                match server.events() {
-                    Ok(events) => {
-                        if let Err(e) = ProxyStream::new(config, &server, events).process().await {
-                            console_log!("[tunnel error]: {}", e);
-                        }
-                    }
-                    Err(e) => console_log!("WebSocket event error: {}", e),
-                }
+        wasm_bindgen_futures::spawn_local(async move {
+            let events = server.events().unwrap();
+            if let Err(e) = ProxyStream::new(cx.data, &server, events).process().await {
+                console_log!("[tunnel]: {}", e);
             }
         });
 
-        // Return websocket client ke client
-        return Response::from_websocket(client);
+        Response::from_websocket(client)
+    } else {
+        Response::from_html("hi from wasm!")
     }
-
-    // Kalau bukan websocket, tetap clean (no HTML, no error)
-    Response::empty()
 }
