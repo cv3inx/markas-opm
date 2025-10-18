@@ -40,3 +40,9 @@ MAIN_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/in
 SUB_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/sub.html"
 LINK_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/link.html"
 CONVERTER_PAGE_URL = "https://raw.githubusercontent.com/cv3inx/markas-opm/main/web/converter.html"
+
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
