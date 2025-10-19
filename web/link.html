@@ -28,59 +28,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-
-    <style>
-      .font-orbitron {
-        font-family: "Orbitron", sans-serif;
-      }
-      .font-rajdhani {
-        font-family: "Rajdhani", sans-serif;
-      }
-
-      .body-bg {
-        background-color: #0a0a0a;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
-      }
-
-      .glass-pane {
-        background: rgba(18, 18, 18, 0.5);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .proxy-card {
-        background-color: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-      .proxy-card:hover {
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-2px);
-      }
-      .tab-btn {
-        transition: background-color 0.3s, color 0.3s;
-      }
-      /* Spinner kecil */
-      .loading-spinner-sm {
-        border: 2px solid transparent;
-        border-top-color: #6366f1; /* warna indigo-500 */
-        border-radius: 50%;
-        width: 16px;
-        height: 16px;
-        animation: spin 0.75s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="css/app.css">
   </head>
 
   <body
@@ -387,7 +335,7 @@
                     class="tab-btn hover:bg-neutral py-3 px-4 font-medium text-sm focus:outline-none rounded-sm"
                     data-target="ss-form"
                   >
-                    <i class="fas fa-mask mr-2"></i>ShadowSocks
+                    <i class="fas fa-mask mr-2"></i>SS
                   </button>
                 </div>
 

@@ -31,7 +31,7 @@ if (nav) {
           Subscription
         </a>
         <a role="tab" href="/link" class="tab text-lg ${currentPath === '/link' ? 'tab-active' : ''} hover:scale-101 hover:shadow-lg hover:shadow-neutral-500/50 transition-all duration-500 ease-in-out">
-          Create Account
+          Generate
         </a>
       </nav>
     `;
