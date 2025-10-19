@@ -10,7 +10,7 @@ let proxyList = [];
 let filteredProxyList = [];
 let selectedProxy = null;
 const defaultProxyUrl =
-  "https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt";
+  "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt";
 
 const serverDomains = ["markas-opm.pp.ua"];
 let selectedServerDomain = serverDomains[0]; // Default to first domain
