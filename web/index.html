@@ -1,157 +1,149 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="black">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markas OPM || Interface</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markas OPM || Interface</title>
 
-  <!-- Favicon -->
-  <link rel="icon" href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png">
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png"
+    />
 
-  <!-- DaisyUI & Tailwind -->
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- DaisyUI & Tailwind -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
 
-  <!-- Custom Styles -->
-  <style>
-    .font-orbitron {
-      font-family: 'Orbitron', sans-serif;
-    }
+    <!-- Custom Styles -->
+    <style>
+      .font-orbitron {
+        font-family: "Orbitron", sans-serif;
+      }
 
-    .font-rajdhani {
-      font-family: 'Rajdhani', sans-serif;
-    }
+      .font-rajdhani {
+        font-family: "Rajdhani", sans-serif;
+      }
 
-    .body-bg {
-      background-color: #0a0a0a;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
-    }
+      .body-bg {
+        background-color: #0a0a0a;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
+      }
 
-    .glass-pane {
-      background: rgba(18, 18, 18, 0.5);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-  </style>
-</head>
+      .glass-pane {
+        background: rgba(18, 18, 18, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
 
-<body class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white">
-  <main class="w-full max-w-md sm:max-w-lg">
-    <div class="card glass-pane shadow-2xl rounded-2xl">
-      <div class="card-body p-6 md:p-8">
+  <body
+    class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white"
+  >
+    <main class="w-full max-w-md sm:max-w-lg">
+      <div class="card glass-pane shadow-2xl rounded-2xl">
+        <div class="card-body p-6 md:p-8">
+          <!-- Header -->
+          <header class="text-center mb-6">
+            <img
+              src="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png"
+              alt="Logo"
+              class="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-white/20 p-1"
+            />
+            <h1
+              class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+            >
+              MARKAS OPM
+            </h1>
+            <p class="text-white/60 tracking-widest mt-1 text-sm">
+              PUBLIC V2RAY GENERATOR
+            </p>
+          </header>
 
-        <!-- Header -->
-        <header class="text-center mb-6">
-          <img src="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png" 
-               alt="Logo" 
-               class="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-white/20 p-1">
-          <h1 class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">MARKAS OPM</h1>
-          <p class="text-white/60 tracking-widest mt-1 text-sm">PUBLIC V2RAY GENERATOR</p>
-        </header>
+          <!-- Navigation Tabs -->
+          <div id="navSec"></div>
 
-        <!-- Navigation Tabs -->
-        <nav role="tablist" class="tabs tabs-bordered">
-          <a role="tab" class="tab tab-active text-lg">Home</a>
-          <a role="tab" href="sub" class="tab text-lg">Subscription</a>
-          <a role="tab" href="link" class="tab text-lg">Generator</a>
-        </nav>
+          <!-- Divider -->
+          <div class="divider text-white/40 my-6 text-sm">MAIN ACTIONS</div>
 
-        <!-- Divider -->
-        <div class="divider text-white/40 my-6 text-sm">MAIN ACTIONS</div>
+          <!-- Main Buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a
+              href="link"
+              class="btn btn-neutral btn-lg text-base transition-transform transform hover:scale-105"
+            >
+              <i class="fas fa-bolt"></i> Generate Account
+            </a>
+            <a
+              href="sub"
+              class="btn btn-ghost btn-lg text-base transition-transform transform hover:scale-105"
+            >
+              <i class="fas fa-rss"></i> Generate Sublink
+            </a>
+          </div>
 
-        <!-- Main Buttons -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <a href="link" class="btn btn-neutral btn-lg text-base transition-transform transform hover:scale-105">
-            <i class="fas fa-bolt"></i> Generate Account
-          </a>
-          <a href="sub" class="btn btn-ghost btn-lg text-base transition-transform transform hover:scale-105">
-            <i class="fas fa-rss"></i> Generate Sublink
-          </a>
+          <!-- Protocol Section -->
+          <div class="divider text-white/40 my-6 text-sm">PROTOCOLS</div>
+
+          <section class="grid grid-cols-4 gap-4 text-center">
+            <div
+              class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+            >
+              <i class="fas fa-atom text-2xl text-white/80"></i>
+              <p class="mt-2 text-xs font-bold">VMESS</p>
+            </div>
+
+            <div
+              class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+            >
+              <i class="fas fa-bolt text-2xl text-white/80"></i>
+              <p class="mt-2 text-xs font-bold">VLESS</p>
+            </div>
+
+            <div
+              class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+            >
+              <i class="fas fa-shield-alt text-2xl text-white/80"></i>
+              <p class="mt-2 text-xs font-bold">TROJAN</p>
+            </div>
+
+            <div
+              class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+            >
+              <i class="fas fa-ghost text-2xl text-white/80"></i>
+              <p class="mt-2 text-xs font-bold">SHADOW</p>
+            </div>
+          </section>
         </div>
-
-        <!-- Protocol Section -->
-        <div class="divider text-white/40 my-6 text-sm">PROTOCOLS</div>
-
-        <section class="grid grid-cols-4 gap-4 text-center">
-          <div class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 
-                      transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-            <i class="fas fa-atom text-2xl text-white/80"></i>
-            <p class="mt-2 text-xs font-bold">VMESS</p>
-          </div>
-
-          <div class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 
-                      transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-            <i class="fas fa-bolt text-2xl text-white/80"></i>
-            <p class="mt-2 text-xs font-bold">VLESS</p>
-          </div>
-
-          <div class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 
-                      transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-            <i class="fas fa-shield-alt text-2xl text-white/80"></i>
-            <p class="mt-2 text-xs font-bold">TROJAN</p>
-          </div>
-
-          <div class="p-4 rounded-lg bg-black/30 border border-white/10 hover:border-white/40 
-                      transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-            <i class="fas fa-ghost text-2xl text-white/80"></i>
-            <p class="mt-2 text-xs font-bold">SHADOW</p>
-          </div>
-        </section>
       </div>
-    </div>
 
-    <!-- Footer -->
-    <footer class="text-center p-4 mt-4 text-sm text-white/50">
-      <p>
-        © <span id="current-year"></span> MARKAS OPM PROJECT — 
-        <a href="https://t.me/shouwee" target="_blank" class="link link-hover text-white/80">Contact Admin</a>
-      </p>
-    </footer>
-  </main>
+      <!-- Footer -->
+      <div id="footer"></div>
+      <div id="floating"></div>
+    </main>
 
-  <!-- Floating Donation Button -->
-  <button class="btn btn-neutral btn-circle fixed bottom-4 right-4 animate-pulse"
-          onclick="donation_modal.showModal()">
-    <i class="fas fa-hand-holding-heart text-xl"></i>
-  </button>
-
-  <!-- Donation Modal -->
-  <dialog id="donation_modal" class="modal">
-    <div class="modal-box text-center glass-pane">
-      <h3 class="font-bold text-lg font-orbitron">Support Us!</h3>
-      <p class="py-4 text-white/80">
-        Your donation keeps our services running. Thank you! 🙏
-      </p>
-      <div class="bg-white p-2 rounded-lg inline-block">
-        <img src="https://x.fairy.my.id/f/POzuPGfJ42ir.png" 
-             alt="QR Code" 
-             class="w-full max-w-xs mx-auto">
-      </div>
-      <div class="modal-action">
-        <form method="dialog">
-          <button class="btn btn-outline w-full">Close</button>
-        </form>
-      </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
-
-  <!-- Scripts -->
-  <script>
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-  </script>
-  <script src="js/common.js"></script>
-  <script src="js/index.js"></script>
-</body>
+    <!-- Scripts -->
+    <script src="js/common.js"></script>
+    <script src="js/index.js"></script>
+  </body>
 </html>

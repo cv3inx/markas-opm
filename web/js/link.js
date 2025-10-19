@@ -1,177 +1,242 @@
 /**
- * JavaScript for the link generator page
+ * Link Generator Page - Markas OPM
+ * Handles proxy list, account creation, and QR code generation
  */
 
-// Declare QRCode variable
-const QRCode = window.QRCode;
+// ============================================
+// Configuration & Constants
+// ============================================
+const CONFIG = {
+  defaultProxyUrl:
+    "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt",
+  serverDomains: ["markas-opm.pp.ua"],
+  pathTemplate: "/MARKASOPM/{ip}-{port}",
+  itemsPerPage: 10,
+  proxyStatusApi: "https://api.jb8fd7grgd.workers.dev",
+  bugOptions: [
+    { value: "", label: "Default" },
+    {
+      value: "support.zoom.us",
+      label: "support.zoom.us",
+    },
+    {
+      value: "ava.game.naver.com",
+      label: "ava.game.naver.com",
+    },
+    {
+      value: "graph.instagram.com",
+      label: "graph.instagram.com",
+    },
+    {
+      value: "df.game.naver.com",
+      label: "df.game.naver.com",
+    },
+    {
+      value: "quiz.int.vidio.com",
+      label: "quiz.int.vidio.com",
+    },
+    {
+      value: "zoomgov.com",
+      label: "zoomgov.com",
+    },
+    {
+      value: "api24-normal-alisg.tiktokv.com",
+      label: "api24-normal-alisg.tiktokv.com",
+    },
+    {
+      value: "zaintest.vuclip.com",
+      label: "zaintest.vuclip.com",
+    },
+    {
+      value: "help.viu.com",
+      label: "help.viu.com",
+    },
+    {
+      value: "grabacademyportal.grab.com",
+      label: "grabacademyportal.grab.com",
+    },
+    {
+      value: "api22-normal-c-alisg.tiktokv.com",
+      label: "api22-normal-c-alisg.tiktokv.com",
+    },
+    {
+      value: "live.iflix.com",
+      label: "live.iflix.com",
+    },
+    {
+      value: "store.linefriends.com",
+      label: "store.linefriends.com",
+    },
+    {
+      value: "cache.netflix.com",
+      label: "cache.netflix.com",
+    },
+    {
+      value: "customlinks.appsflyer.com",
+      label: "customlinks.appsflyer.com",
+    },
 
-// Global variables
-let proxyList = [];
-let filteredProxyList = [];
-let selectedProxy = null;
-const defaultProxyUrl =
-  "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt";
+    { value: "manual", label: "Type Manual" },
+  ],
+};
 
-const serverDomains = ["markas-opm.pp.ua"];
-let selectedServerDomain = serverDomains[0]; // Default to first domain
-const defaultUUID = "bbbbbbbb-opeem-jiir-ffffffffffff";
-const itemsPerPage = 10;
-let currentPage = 1;
+// ============================================
+// State Management
+// ============================================
+const state = {
+  proxyList: [],
+  filteredProxyList: [],
+  selectedProxy: null,
+  currentPage: 1,
+  selectedServerDomain: CONFIG.serverDomains[0],
+};
 
-const pathTemplate = "/MARKASOPM/{ip}-{port}";
+// ============================================
+// DOM Elements Cache
+// ============================================
+const DOM = {
+  // Sections
+  proxyListSection: document.getElementById("proxy-list-section"),
+  accountCreationSection: document.getElementById("account-creation-section"),
+  resultSection: document.getElementById("result-section"),
 
-// Array of bug options for easy management
-const bugOptions = [
-  { value: "", label: "Default" },
-  { value: "ava.game.naver.com", label: "ava.game.naver.com" },
-  { value: "support.zoom.us", label: "support.zoom.us" },
-  {
-    value: "api24-normal-alisg.tiktokv.com",
-    label: "api24-normal-alisg.tiktokv.com",
-  },
-  { value: "manual", label: "Type Manual" },
-];
+  // Proxy List
+  loadingIndicator: document.getElementById("loading-indicator"),
+  proxyListContainer: document.getElementById("proxy-list-container"),
+  noProxiesMessage: document.getElementById("no-proxies-message"),
+  customUrlInput: document.getElementById("custom-url-input"),
+  proxyUrlInput: document.getElementById("proxy-url"),
+  paginationContainer: document.getElementById("pagination-container"),
+  proxyCountInfo: document.getElementById("proxy-count-info"),
+  searchInput: document.getElementById("search-input"),
 
-// DOM elements
-const proxyListSection = document.getElementById("proxy-list-section");
-const accountCreationSection = document.getElementById(
-  "account-creation-section"
-);
-const resultSection = document.getElementById("result-section");
-const loadingIndicator = document.getElementById("loading-indicator");
-const proxyListContainer = document.getElementById("proxy-list-container");
-const noProxiesMessage = document.getElementById("no-proxies-message");
-const customUrlInput = document.getElementById("custom-url-input");
-const proxyUrlInput = document.getElementById("proxy-url");
-const paginationContainer = document.getElementById("pagination-container");
-const proxyCountInfo = document.getElementById("proxy-count-info");
-const searchInput = document.getElementById("search-input");
+  // Buttons
+  refreshBtn: document.getElementById("refresh-btn"),
+  customUrlBtn: document.getElementById("custom-url-btn"),
+  loadCustomUrlBtn: document.getElementById("load-custom-url"),
+  backToListBtn: document.getElementById("back-to-list"),
+  backToFormBtn: document.getElementById("back-to-form"),
+  createNewBtn: document.getElementById("create-new"),
+  backToListFromResultBtn: document.getElementById("back-to-list-from-result"),
+  copyUrlBtn: document.getElementById("copy-url"),
+  downloadQrBtn: document.getElementById("download-qr"),
+};
 
-// Function to populate bug select dropdowns
-function populateBugOptions() {
-  const bugSelects = [
-    document.getElementById("vmess-bug"),
-    document.getElementById("vless-bug"),
-    document.getElementById("trojan-bug"),
-    document.getElementById("ss-bug"),
-  ];
+// ============================================
+// Initialization
+// ============================================
+document.addEventListener("DOMContentLoaded", () => {
+  initializeApp();
+});
 
-  bugSelects.forEach((select) => {
-    if (select) {
-      // Clear existing options
-      select.innerHTML = "";
+function initializeApp() {
+  // Display fallback proxy list immediately
+  displayFallbackProxyList();
 
-      // Add options from the array
-      bugOptions.forEach((option) => {
-        const optionElement = document.createElement("option");
-        optionElement.value = option.value;
-        optionElement.textContent = option.label;
-        select.appendChild(optionElement);
-      });
+  // Load actual proxy list
+  loadProxyList(CONFIG.defaultProxyUrl);
+
+  // Initialize components
+  initializeEventListeners();
+  initializeProtocolTabs();
+  initializeFormHandlers();
+  populateBugOptions();
+  populateServerDomains();
+}
+
+// ============================================
+// Event Listeners Setup
+// ============================================
+function initializeEventListeners() {
+  // Proxy List Controls
+  DOM.refreshBtn?.addEventListener("click", () => {
+    showToast("Refreshing proxy list...", "info");
+    loadProxyList(CONFIG.defaultProxyUrl);
+  });
+
+  DOM.customUrlBtn?.addEventListener("click", () => {
+    DOM.customUrlInput.classList.toggle("hidden");
+  });
+
+  DOM.loadCustomUrlBtn?.addEventListener("click", () => {
+    const url = DOM.proxyUrlInput.value.trim();
+    if (url) {
+      loadProxyList(url);
+    } else {
+      showToast("Please enter a valid URL", "warning");
     }
+  });
+
+  // Navigation
+  DOM.backToListBtn?.addEventListener("click", showProxyListSection);
+  DOM.backToListFromResultBtn?.addEventListener("click", showProxyListSection);
+
+  DOM.backToFormBtn?.addEventListener("click", () => {
+    DOM.resultSection.classList.add("hidden");
+    DOM.accountCreationSection.classList.remove("hidden");
+  });
+
+  DOM.createNewBtn?.addEventListener("click", () => {
+    DOM.resultSection.classList.add("hidden");
+    DOM.accountCreationSection.classList.remove("hidden");
+  });
+
+  // Search with debounce
+  const debouncedSearch = debounce(handleSearch, 300);
+  DOM.searchInput?.addEventListener("input", debouncedSearch);
+
+  // Result Actions
+  DOM.copyUrlBtn?.addEventListener("click", handleCopyUrl);
+  DOM.downloadQrBtn?.addEventListener("click", handleDownloadQr);
+}
+
+// ============================================
+// Protocol Tabs Management
+// ============================================
+function initializeProtocolTabs() {
+  const protocolTabs = document.querySelectorAll(".tab-btn");
+  const protocolForms = document.querySelectorAll(".protocol-form");
+
+  protocolTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.getAttribute("data-target");
+      activateTab(targetId, protocolTabs, protocolForms);
+    });
   });
 }
 
-// Initialize
-document.addEventListener("DOMContentLoaded", () => {
-  // Display fallback proxy list immediately to ensure something is visible
-  displayFallbackProxyList();
+function activateTab(targetId, tabs, forms) {
+  // Reset all tabs and forms
+  tabs.forEach((t) => t.classList.remove("active"));
+  forms.forEach((f) => f.classList.add("hidden"));
 
-  // Then try to load the actual proxy list
-  loadProxyList(defaultProxyUrl);
-
-  // Event listeners
-  document.getElementById("refresh-btn").addEventListener("click", () => {
-    loadProxyList(defaultProxyUrl);
-  });
-
-  document.getElementById("custom-url-btn").addEventListener("click", () => {
-    customUrlInput.classList.toggle("hidden");
-  });
-
-  document.getElementById("load-custom-url").addEventListener("click", () => {
-    const url = proxyUrlInput.value.trim();
-    if (url) {
-      loadProxyList(url);
-    }
-  });
-
-  document.getElementById("back-to-list").addEventListener("click", () => {
-    showProxyListSection();
-  });
-
-  document.getElementById("back-to-form").addEventListener("click", () => {
-    resultSection.classList.add("hidden");
-    accountCreationSection.classList.remove("hidden");
-  });
-
-  document.getElementById("create-new").addEventListener("click", () => {
-    resultSection.classList.add("hidden");
-    accountCreationSection.classList.remove("hidden");
-  });
-
-  document
-    .getElementById("back-to-list-from-result")
-    .addEventListener("click", () => {
-      showProxyListSection();
-    });
-
-  // Search functionality
-  searchInput.addEventListener("input", function () {
-    const searchTerm = this.value.toLowerCase().trim();
-
-    if (searchTerm === "") {
-      filteredProxyList = [...proxyList];
-    } else {
-      filteredProxyList = proxyList.filter(
-        (proxy) =>
-          proxy.provider.toLowerCase().includes(searchTerm) ||
-          proxy.country.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    currentPage = 1;
-    renderProxyList();
-  });
-
-// Protocol tabs
-const protocolTabs = document.querySelectorAll(".tab-btn");
-const protocolForms = document.querySelectorAll(".protocol-form");
-
-function activateTab(targetId) {
-  // Reset semua tab & form
-  protocolTabs.forEach((t) => t.classList.remove("active"));
-  protocolForms.forEach((f) => f.classList.add("hidden"));
-
-  // Aktifkan tab yg diklik
-  const activeTab = document.querySelector(`.tab-btn[data-target="${targetId}"]`);
+  // Activate selected tab
+  const activeTab = document.querySelector(
+    `.tab-btn[data-target="${targetId}"]`
+  );
   if (activeTab) activeTab.classList.add("active");
 
-  // Tampilkan form sesuai tab
+  // Show selected form
   const targetForm = document.getElementById(targetId);
   if (targetForm) targetForm.classList.remove("hidden");
 
-  // Reset kondisi dropdown bug & wildcard saat ganti tab
+  // Reset bug and wildcard states
   resetBugAndWildcardStates();
 }
 
-protocolTabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    const targetId = tab.getAttribute("data-target");
-    activateTab(targetId);
-  });
-});
-
-// Fungsi reset bug dan wildcard supaya gak nyangkut antar tab
 function resetBugAndWildcardStates() {
-  bugInputs.forEach((select, index) => {
-    const manualContainer = document.getElementById(
-      select.id.replace("-bug", "-manual-bug-container")
-    );
-    const wildcardContainer = wildcardContainers[index];
-    const wildcardCheckbox = wildcardCheckboxes[index];
+  const protocols = ["vmess", "vless", "trojan", "ss"];
 
-    // Reset ke kondisi awal
+  protocols.forEach((protocol) => {
+    const bugSelect = document.getElementById(`${protocol}-bug`);
+    const manualContainer = document.getElementById(
+      `${protocol}-manual-bug-container`
+    );
+    const wildcardContainer = document.getElementById(
+      `${protocol}-wildcard-container`
+    );
+    const wildcardCheckbox = document.getElementById(`${protocol}-wildcard`);
+
     if (manualContainer) manualContainer.classList.remove("show");
     if (wildcardContainer) wildcardContainer.classList.remove("show");
     if (wildcardCheckbox) {
@@ -181,18 +246,154 @@ function resetBugAndWildcardStates() {
   });
 }
 
-// Populate server domain dropdowns
-const serverDomainSelects = [
-  document.getElementById("vmess-server-domain"),
-  document.getElementById("vless-server-domain"),
-  document.getElementById("trojan-server-domain"),
-  document.getElementById("ss-server-domain"),
-];
+// ============================================
+// Form Initialization
+// ============================================
+function populateBugOptions() {
+  const protocols = ["vmess", "vless", "trojan", "ss"];
 
-serverDomainSelects.forEach((select) => {
-  if (select) {
+  protocols.forEach((protocol) => {
+    const select = document.getElementById(`${protocol}-bug`);
+    if (!select) return;
+
+    // Bersihkan dulu option lama
     select.innerHTML = "";
-    serverDomains.forEach((domain) => {
+
+    // Placeholder (tidak bisa dipilih)
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = `Pilih bug untuk ${protocol.toUpperCase()}`;
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+
+    // Tambahkan option dari CONFIG.bugOptions
+    CONFIG.bugOptions.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option.value;
+      optionElement.textContent = option.label;
+      select.appendChild(optionElement);
+    });
+
+    // Listener untuk perubahan
+    initializeBugSelectListener(protocol, select);
+  });
+}
+
+
+function initializeBugSelectListener(protocol, select) {
+  const manualContainer = document.getElementById(
+    `${protocol}-manual-bug-container`
+  );
+  const manualInput = document.getElementById(`${protocol}-manual-bug`);
+  const wildcardContainer = document.getElementById(
+    `${protocol}-wildcard-container`
+  );
+  const wildcardCheckbox = document.getElementById(`${protocol}-wildcard`);
+
+  // Periksa apakah elemen-elemen yang diperlukan ada
+  if (!select || !manualContainer || !wildcardContainer || !wildcardCheckbox) {
+    console.warn(`Elemen tidak lengkap untuk protokol ${protocol}`);
+    return;
+  }
+
+  // Tambahkan event listener untuk perubahan pada select
+  select.addEventListener("change", function () {
+    const selectedValue = this.value;
+
+    if (selectedValue === "manual") {
+      // Jika "manual" dipilih, tampilkan input manual, sembunyikan container wildcard
+      manualContainer.classList.remove("hidden");
+      wildcardContainer.classList.add("hidden");
+      // Nonaktifkan dan hilangkan centang wildcard jika dipilih
+      if (wildcardCheckbox.checked) {
+        wildcardCheckbox.checked = false; // Hilangkan centang jika ada
+        // Anda mungkin ingin memicu event change di sini jika ada logika lain
+        // wildcardCheckbox.dispatchEvent(new Event('change'));
+      }
+      wildcardCheckbox.disabled = true; // Nonaktifkan checkbox
+    } else if (selectedValue !== "") {
+      // Jika opsi lain dipilih (bukan manual dan bukan kosong), sembunyikan input manual, tampilkan container wildcard
+      manualContainer.classList.add("hidden");
+      wildcardContainer.classList.remove("hidden");
+      // Aktifkan kembali checkbox
+      wildcardCheckbox.disabled = false;
+    } else {
+      // selectedValue === ""
+      // Jika tidak ada opsi dipilih (kembali ke default), sembunyikan keduanya
+      manualContainer.classList.add("hidden");
+      wildcardContainer.classList.add("hidden");
+      // Reset checkbox: hilangkan centang dan aktifkan kembali
+      wildcardCheckbox.checked = false;
+      wildcardCheckbox.disabled = false;
+    }
+  });
+
+  // Tambahkan event listener untuk input manual
+  manualInput?.addEventListener("input", () => {
+    // Jika user mulai mengetik di input manual, nonaktifkan checkbox wildcard
+    if (wildcardCheckbox && !wildcardCheckbox.disabled) {
+      wildcardCheckbox.disabled = true;
+      // Jika checkbox sedang dicentang, hilangkan centangnya
+      if (wildcardCheckbox.checked) {
+        wildcardCheckbox.checked = false;
+        // Anda mungkin ingin memicu event change di sini jika ada logika lain
+        // wildcardCheckbox.dispatchEvent(new Event('change'));
+      }
+    }
+  });
+
+  // Tambahkan event listener untuk perubahan pada checkbox wildcard
+  wildcardCheckbox.addEventListener("change", function () {
+    if (this.checked) {
+      // Pastikan input manual kosong dan tidak bisa diedit saat wildcard aktif
+      if (manualInput) {
+        manualInput.value = "";
+        manualInput.disabled = true; // Opsional: Nonaktifkan input saat wildcard aktif
+      }
+      // Pastikan select tidak dalam mode "manual"
+      if (select.value === "manual") {
+        // Reset select ke default atau nilai lain jika diperlukan
+        // select.value = ""; // Misalnya, reset ke default
+      }
+    } else {
+      // Jika checkbox tidak dicentang, aktifkan kembali input manual (jika select memungkinkan)
+      if (manualInput) {
+        manualInput.disabled = false; // Kembalikan status input manual sesuai select
+        // Jika select saat ini adalah "manual", biarkan input aktif
+        // Jika select bukan "manual", input tetap tersembunyi dan mungkin tidak perlu diaktifkan
+      }
+    }
+  });
+
+  // Opsional: Perbarui status awal berdasarkan nilai select saat fungsi dipanggil
+  // Ini berguna jika select mungkin sudah memiliki nilai saat halaman dimuat.
+  const initialValue = select.value;
+  if (initialValue === "manual") {
+    manualContainer.classList.remove("hidden");
+    wildcardContainer.classList.add("hidden");
+    wildcardCheckbox.disabled = true;
+  } else if (initialValue !== "") {
+    manualContainer.classList.add("hidden");
+    wildcardContainer.classList.remove("hidden");
+    wildcardCheckbox.disabled = false;
+  } else {
+    manualContainer.classList.add("hidden");
+    wildcardContainer.classList.add("hidden");
+    wildcardCheckbox.checked = false;
+    wildcardCheckbox.disabled = false;
+  }
+}
+
+function populateServerDomains() {
+  const protocols = ["vmess", "vless", "trojan", "ss"];
+
+  protocols.forEach((protocol) => {
+    const select = document.getElementById(`${protocol}-server-domain`);
+    if (!select) return;
+
+    select.innerHTML = "";
+    CONFIG.serverDomains.forEach((domain) => {
       const option = document.createElement("option");
       option.value = domain;
       option.textContent = domain;
@@ -200,277 +401,188 @@ serverDomainSelects.forEach((select) => {
     });
 
     select.addEventListener("change", function () {
-      selectedServerDomain = this.value;
+      state.selectedServerDomain = this.value;
     });
-  }
-});
+  });
+}
 
-// Populate bug options
-populateBugOptions();
+// ============================================
+// Form Submission Handlers
+// ============================================
+function initializeFormHandlers() {
+  const protocols = ["vmess", "vless", "trojan", "ss"];
 
-// Forms
-const forms = [
-  document.getElementById("vmess-account-form"),
-  document.getElementById("vless-account-form"),
-  document.getElementById("trojan-account-form"),
-  document.getElementById("ss-account-form"),
-];
-
-// Bug & Wildcard logic
-const bugInputs = [
-  document.getElementById("vmess-bug"),
-  document.getElementById("vless-bug"),
-  document.getElementById("trojan-bug"),
-  document.getElementById("ss-bug"),
-];
-
-const wildcardContainers = [
-  document.getElementById("vmess-wildcard-container"),
-  document.getElementById("vless-wildcard-container"),
-  document.getElementById("trojan-wildcard-container"),
-  document.getElementById("ss-wildcard-container"),
-];
-
-const wildcardCheckboxes = [
-  document.getElementById("vmess-wildcard"),
-  document.getElementById("vless-wildcard"),
-  document.getElementById("trojan-wildcard"),
-  document.getElementById("ss-wildcard"),
-];
-
-// Listener untuk dropdown bug
-bugInputs.forEach((select, index) => {
-  const manualContainer = document.getElementById(
-    select.id.replace("-bug", "-manual-bug-container")
-  );
-  const manualInput = document.getElementById(
-    select.id.replace("-bug", "-manual-bug")
-  );
-  const wildcardContainer = wildcardContainers[index];
-  const wildcardCheckbox = wildcardCheckboxes[index];
-
-  select.addEventListener("change", function () {
-    if (this.value === "manual") {
-      if (manualContainer) manualContainer.classList.add("show");
-      if (wildcardContainer) wildcardContainer.classList.remove("show");
-      if (wildcardCheckbox) {
-        wildcardCheckbox.checked = false;
-        wildcardCheckbox.disabled = true;
-      }
-    } else if (this.value !== "") {
-      if (manualContainer) manualContainer.classList.remove("show");
-      if (wildcardContainer) wildcardContainer.classList.add("show");
-      if (wildcardCheckbox) wildcardCheckbox.disabled = false;
-    } else {
-      if (manualContainer) manualContainer.classList.remove("show");
-      if (wildcardContainer) wildcardContainer.classList.remove("show");
-      if (wildcardCheckbox) {
-        wildcardCheckbox.checked = false;
-        wildcardCheckbox.disabled = false;
-      }
+  protocols.forEach((protocol) => {
+    const form = document.getElementById(`${protocol}-account-form`);
+    if (form) {
+      form.addEventListener("submit", (e) => handleFormSubmit(e, protocol));
     }
   });
+}
 
-  if (manualInput) {
-    manualInput.addEventListener("input", () => {
-      if (wildcardCheckbox) wildcardCheckbox.disabled = true;
-    });
+function handleFormSubmit(e, protocol) {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  const connectionData = extractFormData(formData, protocol);
+  const connectionUrl = generateConnectionUrl(protocol, connectionData);
+
+  if (!connectionUrl) {
+    showToast("Failed to generate connection URL", "error");
+    return;
   }
-});
 
+  // Display result
+  document.getElementById("connection-url").textContent = connectionUrl;
+  generateQRCode(connectionUrl);
 
-  forms.forEach((form) => {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+  // Show result section
+  DOM.accountCreationSection.classList.add("hidden");
+  DOM.resultSection.classList.remove("hidden");
 
-      // Get form data
-      const formData = new FormData(form);
-      const formType = form.id.split("-")[0]; // vmess, vless, trojan, or ss
+  showToast("Account created successfully!", "success");
+}
 
-      // Get custom bug and wildcard values
-      let customBug = formData.get("bug")
-        ? formData.get("bug").toString().trim()
-        : "";
+function extractFormData(formData, protocol) {
+  let customBug = formData.get("bug")?.toString().trim() || "";
+  // Handle manual bug input
+  if (customBug === "manual") {
+    const manualBug = document
+      .getElementById(`${protocol}-manual-bug`)
+      ?.value.trim();
+    customBug = manualBug || "";
+  }
 
-      // If manual bug is selected, use the manual input value instead
-      if (customBug === "manual") {
-        const manualInputId = `${formType}-manual-bug`;
-        const manualBugValue = document
-          .getElementById(manualInputId)
-          .value.trim();
-        if (manualBugValue) {
-          formData.set("bug", manualBugValue);
-          // Update customBug with the manual value for server address
-          customBug = manualBugValue;
-        } else {
-          formData.set("bug", ""); // Reset to empty if manual field is empty
-          customBug = ""; // Also update customBug variable
-        }
-      }
+  const useWildcard = formData.get("wildcard") === "on";
+  const selectedDomain =
+    formData.get("server-domain") || state.selectedServerDomain;
+  const security = formData.get("security");
 
-      const useWildcard = formData.get("wildcard") === "on";
+  // Determine server, host, and SNI
+  let server = selectedDomain;
+  let host = selectedDomain;
+  let sni = selectedDomain;
 
-      // Determine server, host, and SNI based on custom bug and wildcard
-      // Get the selected server domain from the form
-      const selectedDomain =
-        formData.get("server-domain") || selectedServerDomain;
-      let server = selectedDomain;
-      let host = selectedDomain;
-      let sni = selectedDomain;
+  if (customBug) {
+    server = customBug;
+    if (useWildcard) {
+      host = `${customBug}.${selectedDomain}`;
+      sni = `${customBug}.${selectedDomain}`;
+    }
+  }
 
-      if (customBug) {
-        server = customBug;
-        if (useWildcard) {
-          host = `${customBug}.${selectedDomain}`;
-          sni = `${customBug}.${selectedDomain}`;
-        }
-      }
+  return {
+    name: formData.get("name"),
+    uuid: formData.get("uuid"),
+    password: formData.get("password"),
+    path: formData.get("path"),
+    security,
+    port: security === "tls" ? 443 : 80,
+    server,
+    host,
+    sni,
+  };
+}
 
-      // Generate connection URL based on protocol
-      let connectionUrl = "";
+function generateConnectionUrl(protocol, data) {
+  switch (protocol) {
+    case "vmess":
+      return generateVMessUrl(data);
+    case "vless":
+      return generateVLESSUrl(data);
+    case "trojan":
+      return generateTrojanUrl(data);
+    case "ss":
+      return generateShadowsocksUrl(data);
+    default:
+      return null;
+  }
+}
 
-      if (formType === "vmess") {
-        const security = formData.get("security");
-        // Set port based on TLS setting
-        const port = security === "tls" ? 443 : 80;
+function generateVMessUrl(data) {
+  const vmessConfig = {
+    v: "2",
+    ps: data.name,
+    add: data.server,
+    port: data.port,
+    id: data.uuid,
+    aid: "0",
+    net: "ws",
+    type: "none",
+    host: data.host,
+    path: data.path,
+    tls: data.security === "tls" ? "tls" : "",
+    sni: data.sni,
+    scy: "zero",
+  };
 
-        const vmessConfig = {
-          v: "2",
-          ps: formData.get("name"),
-          add: server,
-          port: port,
-          id: formData.get("uuid"),
-          aid: "0",
-          net: "ws", // Always WebSocket
-          type: "none",
-          host: host,
-          path: formData.get("path"),
-          tls: security === "tls" ? "tls" : "",
-          sni: sni,
-          scy: "zero",
-        };
+  return "vmess://" + safeBase64Encode(JSON.stringify(vmessConfig));
+}
 
-        connectionUrl = "vmess://" + btoa(JSON.stringify(vmessConfig));
-      } else if (formType === "vless") {
-        const uuid = formData.get("uuid");
-        const path = encodeURIComponent(formData.get("path"));
-        const security = formData.get("security");
-        const encryption = "none";
-        const name = encodeURIComponent(formData.get("name"));
-        // Set port based on TLS setting
-        const port = security === "tls" ? 443 : 80;
+function generateVLESSUrl(data) {
+  const uuid = data.uuid;
+  const path = encodeURIComponent(data.path);
+  const name = encodeURIComponent(data.name);
 
-        connectionUrl = `vless://${uuid}@${server}:${port}?encryption=${encryption}&security=${security}&type=ws&host=${host}&path=${path}&sni=${sni}#${name}`;
-      } else if (formType === "trojan") {
-        const password = formData.get("password");
-        const path = encodeURIComponent(formData.get("path"));
-        const security = formData.get("security");
-        const name = encodeURIComponent(formData.get("name"));
-        // Set port based on TLS setting
-        const port = security === "tls" ? 443 : 80;
+  return `vless://${uuid}@${data.server}:${data.port}?encryption=none&security=${data.security}&type=ws&host=${data.host}&path=${path}&sni=${data.sni}#${name}`;
+}
 
-        connectionUrl = `trojan://${password}@${server}:${port}?security=${security}&type=ws&host=${host}&path=${path}&sni=${sni}#${name}`;
-      } else if (formType === "ss") {
-        const password = formData.get("password");
-        const name = encodeURIComponent(formData.get("name"));
-        const path = encodeURIComponent(formData.get("path"));
-        const security = formData.get("security");
+function generateTrojanUrl(data) {
+  const password = data.password;
+  const path = encodeURIComponent(data.path);
+  const name = encodeURIComponent(data.name);
 
-        // Set port based on TLS setting
-        const port = security === "tls" ? 443 : 80;
+  return `trojan://${password}@${data.server}:${data.port}?security=${data.security}&type=ws&host=${data.host}&path=${path}&sni=${data.sni}#${name}`;
+}
 
-        // Use fixed cipher: none for Shadowsocks
-        const method = "none";
+function generateShadowsocksUrl(data) {
+  const password = data.password;
+  const name = encodeURIComponent(data.name);
+  const path = encodeURIComponent(data.path);
+  const method = "none";
+  const userInfo = btoa(`${method}:${password}`);
 
-        // Base64 encode the method:password part
-        const userInfo = btoa(`${method}:${password}`);
+  return `ss://${userInfo}@${data.server}:${data.port}?encryption=none&type=ws&host=${data.host}&path=${path}&security=${data.security}&sni=${data.sni}#${name}`;
+}
 
-        // Create the new format SS URL with dynamic port
-        connectionUrl = `ss://${userInfo}@${server}:${port}?encryption=none&type=ws&host=${host}&path=${path}&security=${security}&sni=${sni}#${name}`;
-      }
-
-      // Display the result
-      document.getElementById("connection-url").textContent = connectionUrl;
-
-      // Generate QR code - Improved with multiple fallback methods
-      generateQRCode(connectionUrl);
-
-      // Show result section
-      accountCreationSection.classList.add("hidden");
-      resultSection.classList.remove("hidden");
-    });
-  });
-
-  // Copy URL button
-  document.getElementById("copy-url").addEventListener("click", function () {
-    const connectionUrl = document.getElementById("connection-url").textContent;
-    navigator.clipboard.writeText(connectionUrl).then(() => {
-      this.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
-      setTimeout(() => {
-        this.innerHTML = '<i class="far fa-copy mr-1"></i> Copy';
-      }, 2000);
-    });
-  });
-
-  // Download QR code button
-  document.getElementById("download-qr").addEventListener("click", () => {
-    downloadQRCode();
-  });
-});
-
-// Improved QR code generation with multiple fallback methods
+// ============================================
+// QR Code Generation
+// ============================================
 function generateQRCode(text) {
   const qrcodeElement = document.getElementById("qrcode");
+  if (!qrcodeElement) return;
+
   qrcodeElement.innerHTML = "";
 
-  // Try multiple methods to generate QR code
   try {
-    // Method 1: Try to generate QR code using toCanvas
-    QRCode.toCanvas(
+    window.QRCode.toCanvas(
       qrcodeElement,
       text,
       {
         width: 200,
         margin: 1,
-        color: {
-          dark: "#000000",
-          light: "#FFFFFF",
-        },
+        color: { dark: "#000000", light: "#FFFFFF" },
       },
       (error) => {
         if (error) {
           console.error("QR Code canvas error:", error);
-          // If canvas fails, try method 2
           generateQRCodeFallback(text, qrcodeElement);
         }
       }
     );
   } catch (error) {
     console.error("QR Code generation error:", error);
-    // If method 1 fails completely, try method 2
     generateQRCodeFallback(text, qrcodeElement);
   }
 }
 
-// Fallback QR code generation method
 function generateQRCodeFallback(text, container) {
   try {
-    // Method 2: Try to generate QR code as SVG
-    QRCode.toString(
+    window.QRCode.toString(
       text,
-      {
-        type: "svg",
-        width: 200,
-        margin: 1,
-        color: {
-          dark: "#000000",
-          light: "#FFFFFF",
-        },
-      },
+      { type: "svg", width: 200, margin: 1 },
       (error, svg) => {
         if (error || !svg) {
-          console.error("QR Code SVG error:", error);
-          // If SVG fails, try method 3
           generateQRCodeLastResort(text, container);
         } else {
           container.innerHTML = svg;
@@ -478,43 +590,54 @@ function generateQRCodeFallback(text, container) {
       }
     );
   } catch (error) {
-    console.error("QR Code SVG generation error:", error);
-    // If method 2 fails completely, try method 3
     generateQRCodeLastResort(text, container);
   }
 }
 
-// Last resort QR code generation method
 function generateQRCodeLastResort(text, container) {
-  try {
-    // Method 3: Try to generate QR code as data URL
-    const encodedText = encodeURIComponent(text);
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedText}`;
+  const encodedText = encodeURIComponent(text);
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedText}`;
 
-    const img = document.createElement("img");
-    img.src = qrApiUrl;
-    img.alt = "QR Code";
-    img.width = 200;
-    img.height = 200;
-    img.onerror = () => {
-      container.innerHTML =
-        '<div class="text-center text-rose-500">Failed to generate QR code</div>';
-    };
-
-    container.innerHTML = "";
-    container.appendChild(img);
-  } catch (error) {
-    console.error("QR Code last resort error:", error);
+  const img = document.createElement("img");
+  img.src = qrApiUrl;
+  img.alt = "QR Code";
+  img.width = 200;
+  img.height = 200;
+  img.className = "rounded-lg";
+  img.onerror = () => {
     container.innerHTML =
-      '<div class="text-center text-rose-500">Failed to generate QR code</div>';
+      '<div class="text-center text-error">Failed to generate QR code</div>';
+  };
+
+  container.innerHTML = "";
+  container.appendChild(img);
+}
+
+// ============================================
+// Result Actions
+// ============================================
+async function handleCopyUrl() {
+  const connectionUrl = document.getElementById("connection-url")?.textContent;
+  if (!connectionUrl) return;
+
+  const success = await copyToClipboard(connectionUrl);
+
+  if (success) {
+    DOM.copyUrlBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    showToast("Copied to clipboard!", "success");
+
+    setTimeout(() => {
+      DOM.copyUrlBtn.innerHTML = '<i class="far fa-copy"></i> Copy';
+    }, 2000);
+  } else {
+    showToast("Failed to copy", "error");
   }
 }
 
-// Download QR code function
-function downloadQRCode() {
+function handleDownloadQr() {
   const qrcodeElement = document.getElementById("qrcode");
+  if (!qrcodeElement) return;
 
-  // Try to find canvas or img in the QR code container
   const canvas = qrcodeElement.querySelector("canvas");
   const img = qrcodeElement.querySelector("img");
   const svg = qrcodeElement.querySelector("svg");
@@ -522,17 +645,14 @@ function downloadQRCode() {
   let imageUrl = null;
 
   if (canvas) {
-    // If canvas exists, convert it to data URL
     try {
       imageUrl = canvas.toDataURL("image/png");
     } catch (e) {
       console.error("Canvas to data URL error:", e);
     }
   } else if (img) {
-    // If img exists, use its src
     imageUrl = img.src;
   } else if (svg) {
-    // If SVG exists, convert it to data URL
     try {
       const svgData = new XMLSerializer().serializeToString(svg);
       const svgBlob = new Blob([svgData], {
@@ -545,27 +665,28 @@ function downloadQRCode() {
   }
 
   if (imageUrl) {
-    // Create a link and trigger download
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = "qrcode.png";
+    link.download = `qrcode-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // Revoke object URL if it was created from a blob
     if (imageUrl.startsWith("blob:")) {
       URL.revokeObjectURL(imageUrl);
     }
+
+    showToast("QR Code downloaded!", "success");
   } else {
-    alert("Failed to download QR code. Please try again.");
+    showToast("Failed to download QR code", "error");
   }
 }
 
-// Function to display fallback proxy list
+// ============================================
+// Proxy List Management
+// ============================================
 function displayFallbackProxyList() {
-  // Add a fallback proxy list for immediate display
-  proxyList = [
+  state.proxyList = [
     {
       ip: "103.6.207.108",
       port: "8080",
@@ -574,504 +695,360 @@ function displayFallbackProxyList() {
     },
   ];
 
-  filteredProxyList = [...proxyList];
+  state.filteredProxyList = [...state.proxyList];
   renderProxyList();
 }
 
-// Process proxy list data
+async function loadProxyList(url) {
+  DOM.loadingIndicator?.classList.remove("hidden");
+  DOM.proxyListContainer.innerHTML = "";
+  DOM.noProxiesMessage?.classList.add("hidden");
+
+  const corsProxies = [
+    () =>
+      fetch(url).then((r) =>
+        r.ok ? r.text() : Promise.reject("Direct fetch failed")
+      ),
+    () =>
+      fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
+        .then((r) => r.json())
+        .then((data) => data.contents),
+    () =>
+      fetch(`https://cors.sh/${url}`, {
+        headers: {
+          "x-cors-api-key": `temp_${Math.random()
+            .toString(36)
+            .substring(2, 12)}`,
+        },
+      }).then((r) => (r.ok ? r.text() : Promise.reject("CORS.sh failed"))),
+  ];
+
+  for (let i = 0; i < corsProxies.length; i++) {
+    try {
+      const text = await corsProxies[i]();
+      processProxyData(text);
+      DOM.loadingIndicator?.classList.add("hidden");
+      showToast("Proxy list loaded successfully!", "success");
+      return;
+    } catch (error) {
+      console.error(`Proxy method ${i + 1} failed:`, error);
+    }
+  }
+
+  // All methods failed
+  console.error("All proxy loading methods failed");
+  DOM.loadingIndicator?.classList.add("hidden");
+  DOM.noProxiesMessage?.classList.remove("hidden");
+  showToast("Failed to load proxy list, using fallback", "warning");
+  displayFallbackProxyList();
+}
+
 function processProxyData(text) {
-  // Handle different line endings and remove empty lines
   const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
-  console.log(`Found ${lines.length} lines in proxy data`);
 
   if (lines.length === 0) {
-    noProxiesMessage.classList.remove("hidden");
-    return; // No data to process
+    DOM.noProxiesMessage?.classList.remove("hidden");
+    return;
   }
 
-  // Try to determine the format of the data
-  let delimiter = ","; // Default delimiter
-
-  // Check if the data uses tabs or other delimiters
+  // Detect delimiter
   const firstLine = lines[0];
-  if (firstLine.includes("\t")) {
-    delimiter = "\t";
-  } else if (firstLine.includes("|")) {
-    delimiter = "|";
-  } else if (firstLine.includes(";")) {
-    delimiter = ";";
-  }
+  let delimiter = ",";
+  if (firstLine.includes("\t")) delimiter = "\t";
+  else if (firstLine.includes("|")) delimiter = "|";
+  else if (firstLine.includes(";")) delimiter = ";";
 
-  // Parse proxy list with the detected delimiter
-  proxyList = lines
+  // Parse proxies
+  state.proxyList = lines
     .map((line) => {
       const parts = line.split(delimiter);
-
-      // Require at least IP and port
       if (parts.length >= 2) {
         return {
           ip: parts[0].trim(),
           port: parts[1].trim(),
-          country: parts.length >= 3 ? parts[2].trim() : "Unknown",
-          provider: parts.length >= 4 ? parts[3].trim() : "Unknown Provider",
+          country: parts[2]?.trim() || "Unknown",
+          provider: parts[3]?.trim() || "Unknown Provider",
         };
       }
       return null;
     })
     .filter((proxy) => proxy && proxy.ip && proxy.port);
 
-  console.log(`Processed ${proxyList.length} valid proxies`);
-
-  // If no valid proxies were found, show message and use fallback
-  if (proxyList.length === 0) {
-    noProxiesMessage.classList.remove("hidden");
+  if (state.proxyList.length === 0) {
+    DOM.noProxiesMessage?.classList.remove("hidden");
     displayFallbackProxyList();
     return;
   }
 
-  // Reset pagination
-  currentPage = 1;
-  filteredProxyList = [...proxyList];
-
-  // Render the proxy list
+  state.currentPage = 1;
+  state.filteredProxyList = [...state.proxyList];
   renderProxyList();
 }
 
-// Function to render the proxy list with pagination
-function renderProxyList() {
-  proxyListContainer.innerHTML = "";
+function handleSearch(e) {
+  const searchTerm = e.target.value.toLowerCase().trim();
 
-  if (filteredProxyList.length === 0) {
-    noProxiesMessage.classList.remove("hidden");
-    paginationContainer.innerHTML = "";
-    proxyCountInfo.textContent = "";
+  state.filteredProxyList =
+    searchTerm === ""
+      ? [...state.proxyList]
+      : state.proxyList.filter(
+          (proxy) =>
+            proxy.provider.toLowerCase().includes(searchTerm) ||
+            proxy.country.toLowerCase().includes(searchTerm)
+        );
+
+  state.currentPage = 1;
+  renderProxyList();
+}
+
+function renderProxyList() {
+  DOM.proxyListContainer.innerHTML = "";
+
+  if (state.filteredProxyList.length === 0) {
+    DOM.noProxiesMessage?.classList.remove("hidden");
+    DOM.paginationContainer.innerHTML = "";
+    DOM.proxyCountInfo.textContent = "";
     return;
   }
 
-  noProxiesMessage.classList.add("hidden");
+  DOM.noProxiesMessage?.classList.add("hidden");
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredProxyList.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(
-    startIndex + itemsPerPage,
-    filteredProxyList.length
+  // Pagination
+  const totalPages = Math.ceil(
+    state.filteredProxyList.length / CONFIG.itemsPerPage
   );
-
-  // Get current page items
-  const currentItems = filteredProxyList.slice(startIndex, endIndex);
+  const startIndex = (state.currentPage - 1) * CONFIG.itemsPerPage;
+  const endIndex = Math.min(
+    startIndex + CONFIG.itemsPerPage,
+    state.filteredProxyList.length
+  );
+  const currentItems = state.filteredProxyList.slice(startIndex, endIndex);
 
   // Render proxy cards
   currentItems.forEach((proxy, index) => {
     const actualIndex = startIndex + index;
-    const card = document.createElement("div");
-    card.className = "proxy-card group";
-
-    // Create the main content of the card with forced row layout
-    const cardContent = document.createElement("div");
-    cardContent.className = "flex justify-between items-center";
-    cardContent.style.display = "flex"; // Force flex display
-    cardContent.style.flexDirection = "row"; // Force row direction
-
-    // Left side with proxy info
-    const infoDiv = document.createElement("div");
-    infoDiv.className = "flex-1 min-w-0 pr-2"; // min-w-0 helps with text truncation
-
-    // Provider and status badge container
-    const providerContainer = document.createElement("div");
-    providerContainer.className = "flex-items-center";
-    providerContainer.style.display = "flex";
-    providerContainer.style.alignItems = "center";
-    providerContainer.style.width = "100%";
-    providerContainer.style.position = "relative";
-
-    // Provider name with truncation
-    const providerName = document.createElement("div");
-    providerName.className =
-      "font-medium text-sm truncate group-hover:text-indigo-300 transition-colors";
-    providerName.style.maxWidth = "calc(100% - 20px)"; // Leave space for the status indicator
-    providerName.textContent = proxy.provider;
-    providerContainer.appendChild(providerName);
-
-    // Status badge (initially loading)
-    const statusBadge = document.createElement("span");
-    statusBadge.className =
-      "inline-block w-3 h-3 rounded-full bg-gray-500 ml-2 pulse-animation";
-    statusBadge.style.flexShrink = "0";
-    statusBadge.style.position = "relative";
-    statusBadge.innerHTML = "";
-    statusBadge.title = "Memeriksa...";
-    statusBadge.id = `proxy-status-${actualIndex}`;
-    providerContainer.appendChild(statusBadge);
-
-    infoDiv.appendChild(providerContainer);
-
-    // Country and IP:Port info with truncation
-    const detailsDiv = document.createElement("div");
-    detailsDiv.className =
-      "text-xs text-gray-400 mt-1 truncate group-hover:text-gray-300 transition-colors";
-    detailsDiv.style.whiteSpace = "nowrap";
-    detailsDiv.style.overflow = "hidden";
-    detailsDiv.style.textOverflow = "ellipsis";
-    detailsDiv.textContent = `${proxy.country} | ${proxy.ip}:${proxy.port}`;
-    infoDiv.appendChild(detailsDiv);
-
-    // Right side with button - fixed width to prevent wrapping
-    const buttonDiv = document.createElement("div");
-    buttonDiv.className = "flex-shrink-0";
-    buttonDiv.style.flexShrink = "0"; // Prevent shrinking
-
-    const button = document.createElement("button");
-    button.className =
-      "create-account-btn btn-sm bg-neutral py-2 px-4 rounded-lg text-xs group-hover:scale-105 transition-transform";
-    button.style.whiteSpace = "nowrap";
-    button.style.minWidth = "60px";
-    button.setAttribute("data-index", actualIndex);
-    button.innerHTML = "Create";
-    buttonDiv.appendChild(button);
-
-    // Assemble the card
-    cardContent.appendChild(infoDiv);
-    cardContent.appendChild(buttonDiv);
-    card.appendChild(cardContent);
-
-    proxyListContainer.appendChild(card);
-
-    // Check proxy status for this card
-    const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`;
-
-    fetch(statusURL)
-      .then((response) => response.json())
-      .then((data) => {
-        // Handle the new format where data is an array
-        const proxyData = Array.isArray(data) ? data[0] : data;
-
-        if (proxyData && proxyData.proxyip === true) {
-          statusBadge.className =
-            "inline-block w-3 h-3 rounded-full bg-emerald-500 ml-2";
-          statusBadge.innerHTML = "";
-          statusBadge.title = "Aktif";
-        } else {
-          statusBadge.className =
-            "inline-block w-3 h-3 rounded-full bg-rose-500 ml-2";
-          statusBadge.innerHTML = "";
-          statusBadge.title = "Mati";
-        }
-      })
-      .catch((error) => {
-        statusBadge.className =
-          "inline-block w-3 h-3 rounded-full bg-amber-500 ml-2";
-        statusBadge.innerHTML = "";
-        statusBadge.title = "Tidak diketahui";
-        console.error("Fetch error:", error);
-      });
+    const card = createProxyCard(proxy, actualIndex);
+    DOM.proxyListContainer.appendChild(card);
+    checkProxyStatusInList(proxy, card.querySelector(".proxy-status-badge"));
   });
 
-  // Add event listeners to create account buttons
-  document.querySelectorAll(".create-account-btn").forEach((button) => {
-    button.addEventListener("click", function () {
-      const index = Number.parseInt(this.getAttribute("data-index"));
-      selectProxy(index);
-      showAccountCreationSection();
-    });
-  });
-
-  // Render pagination controls
+  // Render pagination
   renderPagination(totalPages);
 
-  // Update proxy count info
-  proxyCountInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${
-    filteredProxyList.length
+  // Update count info
+  DOM.proxyCountInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${
+    state.filteredProxyList.length
   } proxies`;
 }
 
-// Function to check proxy status in the list
-function checkProxyStatusInList(proxy, statusBadge) {
-  const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`;
+function createProxyCard(proxy, index) {
+  const card = document.createElement("div");
+  card.className = "proxy-card group";
 
-  fetch(statusURL)
-    .then((response) => response.json())
-    .then((data) => {
-      // Handle the new format where data is an array
-      const proxyData = Array.isArray(data) ? data[0] : data;
+  card.innerHTML = `
+    <div class="flex justify-between items-center">
+      <div class="flex-1 min-w-0 pr-2">
+        <div class="flex items-center">
+          <div class="font-medium text-sm truncate group-hover:text-purple-300 font-bold transition-colors">
+            ${proxy.provider}
+          </div>
+          <span class="proxy-status-badge inline-block w-3 h-3 rounded-full bg-gray-500 ml-2 animate-pulse" 
+                title="Checking..."></span>
+        </div>
+        <div class="text-xs text-gray-400 mt-1 truncate group-hover:text-gray-300 transition-colors">
+          ${proxy.country} | ${proxy.ip}:${proxy.port}
+        </div>
+      </div>
+      <div class="flex-shrink-0">
+        <button class="btn btn-sm btn-neutral gap-1 hover:scale-105 transition-transform rounded-lg" 
+                data-index="${index}">
+          <i class="fas fa-plus-circle text-xs"></i>
+          Create
+        </button>
+      </div>
+    </div>
+  `;
 
-      if (proxyData && proxyData.proxyip === true) {
-        statusBadge.className =
-          "inline-block w-3 h-3 rounded-full bg-emerald-500 ml-2";
-        statusBadge.innerHTML = "";
-        statusBadge.title = "Aktif";
-      } else {
-        statusBadge.className =
-          "inline-block w-3 h-3 rounded-full bg-rose-500 ml-2";
-        statusBadge.innerHTML = "";
-        statusBadge.title = "Mati";
-      }
-    })
-    .catch((error) => {
-      statusBadge.className =
-        "inline-block w-3 h-3 rounded-full bg-amber-500 ml-2";
-      statusBadge.innerHTML = "";
-      statusBadge.title = "Tidak diketahui";
-      console.error("Fetch error:", error);
-    });
+  // Add click listener to button
+  const button = card.querySelector("button");
+  button.addEventListener("click", () => {
+    selectProxy(index);
+    showAccountCreationSection();
+  });
+
+  return card;
 }
 
-// Function to render pagination controls
-/**
- * Merender kontrol paginasi menggunakan komponen join dari DaisyUI.
- * @param {number} totalPages - Jumlah total halaman.
- */
-function renderPagination(totalPages) {
-  const paginationContainer = document.getElementById("pagination-container");
-  paginationContainer.innerHTML = ""; // Hapus konten lama
+async function checkProxyStatusInList(proxy, statusBadge) {
+  if (!statusBadge) return;
 
-  // Jangan tampilkan pagination jika hanya ada satu halaman atau kurang
+  try {
+    const response = await fetch(
+      `${CONFIG.proxyStatusApi}/${proxy.ip}:${proxy.port}`
+    );
+    const data = await response.json();
+    const proxyData = Array.isArray(data) ? data[0] : data;
+
+    if (proxyData?.proxyip === true) {
+      statusBadge.className =
+        "inline-block w-3 h-3 rounded-full bg-emerald-500 ml-2";
+      statusBadge.title = "Active";
+    } else {
+      statusBadge.className =
+        "inline-block w-3 h-3 rounded-full bg-rose-500 ml-2";
+      statusBadge.title = "Dead";
+    }
+  } catch (error) {
+    statusBadge.className =
+      "inline-block w-3 h-3 rounded-full bg-amber-500 ml-2";
+    statusBadge.title = "Unknown";
+  }
+}
+
+function renderPagination(totalPages) {
   if (totalPages <= 1) {
+    DOM.paginationContainer.innerHTML = "";
     return;
   }
 
-  // Buat HTML untuk komponen join DaisyUI
-  const paginationHTML = `
-        <div class="join">
-            <button class="join-item btn btn-sm btn-ghost" data-page="${
-              currentPage - 1
-            }" ${currentPage === 1 ? "disabled" : ""}>«</button>
-            <button class="join-item btn btn-sm btn-disabled">Page ${currentPage} of ${totalPages}</button>
-            <button class="join-item btn btn-sm btn-ghost" data-page="${
-              currentPage + 1
-            }" ${currentPage === totalPages ? "disabled" : ""}>»</button>
-        </div>
-    `;
+  const html = `
+    <div class="join">
+      <button class="join-item btn btn-sm" data-page="${state.currentPage - 1}" 
+              ${state.currentPage === 1 ? "disabled" : ""}>
+        «
+      </button>
+      <button class="join-item btn btn-sm btn-disabled">
+        Page ${state.currentPage} of ${totalPages}
+      </button>
+      <button class="join-item btn btn-sm" data-page="${state.currentPage + 1}" 
+              ${state.currentPage === totalPages ? "disabled" : ""}>
+        »
+      </button>
+    </div>
+  `;
 
-  // Masukkan HTML yang sudah jadi ke dalam kontainer
-  paginationContainer.innerHTML = paginationHTML;
+  DOM.paginationContainer.innerHTML = html;
 
-  // Tambahkan event listener ke tombol 'previous' dan 'next' yang bisa diklik
-  paginationContainer
+  // Add click listeners
+  DOM.paginationContainer
     .querySelectorAll("button[data-page]")
     .forEach((button) => {
-      button.addEventListener("click", (e) => {
-        // Jangan lakukan apa-apa jika tombolnya disabled
-        if (e.currentTarget.hasAttribute("disabled")) {
-          return;
-        }
-
-        // Perbarui halaman saat ini dan render ulang daftar proksi
-        currentPage = parseInt(e.currentTarget.dataset.page, 10);
-        renderProxyList();
-      });
+      if (!button.hasAttribute("disabled")) {
+        button.addEventListener("click", () => {
+          state.currentPage = parseInt(button.dataset.page, 10);
+          renderProxyList();
+        });
+      }
     });
 }
 
-// Function to select a proxy
+// ============================================
+// Proxy Selection
+// ============================================
 async function selectProxy(index) {
-  selectedProxy = filteredProxyList[index];
+  state.selectedProxy = state.filteredProxyList[index];
 
-  // Update selected proxy info
-  document.getElementById("selected-ip").textContent = selectedProxy.ip;
-  document.getElementById("selected-port").textContent = selectedProxy.port;
+  // Update UI
+  document.getElementById("selected-ip").textContent = state.selectedProxy.ip;
+  document.getElementById("selected-port").textContent =
+    state.selectedProxy.port;
   document.getElementById("selected-country").textContent =
-    selectedProxy.country;
+    state.selectedProxy.country;
   document.getElementById("selected-provider").textContent =
-    selectedProxy.provider;
+    state.selectedProxy.provider;
 
   // Update form fields
-  const baseAccountName = `${selectedProxy.country} - ${selectedProxy.provider}`;
-  const path = pathTemplate
-    .replace("{ip}", selectedProxy.ip)
-    .replace("{port}", selectedProxy.port);
+  const baseAccountName = `${state.selectedProxy.country} - ${state.selectedProxy.provider}`;
+  const path = CONFIG.pathTemplate
+    .replace("{ip}", state.selectedProxy.ip)
+    .replace("{port}", state.selectedProxy.port);
 
-  // Set the path values
-  document.getElementById("vmess-path").value = path;
-  document.getElementById("vless-path").value = path;
-  document.getElementById("trojan-path").value = path;
-  document.getElementById("ss-path").value = path;
-
-  // Set initial account names with protocol and TLS info
-  const vmessSecurity = document.getElementById("vmess-security").value;
-  const vlessSecurity = document.getElementById("vless-security").value;
-  const trojanSecurity = document.getElementById("trojan-security").value;
-  const ssSecurity = document.getElementById("ss-security").value;
-
-  document.getElementById("vmess-name").value = `${baseAccountName} [VMess-${
-    vmessSecurity === "tls" ? "TLS" : "NTLS"
-  }]`;
-  document.getElementById("vless-name").value = `${baseAccountName} [VLESS-${
-    vlessSecurity === "tls" ? "TLS" : "NTLS"
-  }]`;
-  document.getElementById("trojan-name").value = `${baseAccountName} [Trojan-${
-    trojanSecurity === "tls" ? "TLS" : "NTLS"
-  }]`;
-  document.getElementById("ss-name").value = `${baseAccountName} [SS-${
-    ssSecurity === "tls" ? "TLS" : "NTLS"
-  }]`;
-
-  // Add event listeners to update account names when security option changes
-  const securitySelects = [
-    { id: "vmess-security", nameId: "vmess-name", protocol: "VMess" },
-    { id: "vless-security", nameId: "vless-name", protocol: "VLESS" },
-    { id: "trojan-security", nameId: "trojan-name", protocol: "Trojan" },
-    { id: "ss-security", nameId: "ss-name", protocol: "SS" },
-  ];
-
-  securitySelects.forEach((item) => {
-    const select = document.getElementById(item.id);
-    const nameInput = document.getElementById(item.nameId);
-
-    // Remove any existing event listeners (to prevent duplicates)
-    const newSelect = select.cloneNode(true);
-    select.parentNode.replaceChild(newSelect, select);
-
-    // Add new event listener
-    newSelect.addEventListener("change", function () {
-      const tlsType = this.value === "tls" ? "TLS" : "NTLS";
-      nameInput.value = `${baseAccountName} [${item.protocol}-${tlsType}]`;
-    });
+  // Set paths
+  ["vmess", "vless", "trojan", "ss"].forEach((protocol) => {
+    document.getElementById(`${protocol}-path`).value = path;
+    updateAccountName(protocol, baseAccountName);
   });
 
-  // Check proxy status in the account creation section
-  const statusContainer = document.getElementById("proxy-status-container");
-  const statusLoading = document.getElementById("proxy-status-loading");
-  const statusActive = document.getElementById("proxy-status-active");
-  const statusDead = document.getElementById("proxy-status-dead");
-  const statusUnknown = document.getElementById("proxy-status-unknown");
-  const latencyElement = document.getElementById("proxy-latency");
-
-  // Show status container and loading state
-  statusContainer.classList.remove("hidden");
-  statusLoading.classList.remove("hidden");
-  statusActive.classList.add("hidden");
-  statusDead.classList.add("hidden");
-  statusUnknown.classList.add("hidden");
-
-  checkProxyStatus(selectedProxy);
+  // Check proxy status
+  checkProxyStatusInCreation(state.selectedProxy);
 }
 
-// Function to check proxy status in the account creation section
-function checkProxyStatus(proxy) {
-  const startTime = performance.now();
-  const statusURL = `https://api.jb8fd7grgd.workers.dev/${proxy.ip}:${proxy.port}`;
-  const statusContainer = document.getElementById("proxy-status-container");
-  const statusLoading = document.getElementById("proxy-status-loading");
-  const statusActive = document.getElementById("proxy-status-active");
-  const statusDead = document.getElementById("proxy-status-dead");
-  const statusUnknown = document.getElementById("proxy-status-unknown");
-  const latencyElement = document.getElementById("proxy-latency");
+function updateAccountName(protocol, baseName) {
+  const security =
+    document.getElementById(`${protocol}-security`)?.value || "tls";
+  const tlsType = security === "tls" ? "TLS" : "NTLS";
+  const protocolName =
+    protocol === "ss"
+      ? "SS"
+      : protocol.charAt(0).toUpperCase() + protocol.slice(1);
 
-  // Show status container and loading state
-  statusContainer.classList.remove("hidden");
-  statusLoading.classList.remove("hidden");
-  statusActive.classList.add("hidden");
-  statusDead.classList.add("hidden");
-  statusUnknown.classList.add("hidden");
+  const nameInput = document.getElementById(`${protocol}-name`);
+  if (nameInput) {
+    nameInput.value = `${baseName} [${protocolName}-${tlsType}]`;
+  }
 
-  fetch(statusURL)
-    .then((response) => response.json())
-    .then((data) => {
-      const endTime = performance.now();
-      const latency = Math.floor(endTime - startTime);
-
-      // Hide loading state
-      statusLoading.classList.add("hidden");
-
-      // Handle the new format where data is an array
-      const proxyData = Array.isArray(data) ? data[0] : data;
-
-      if (proxyData && proxyData.proxyip === true) {
-        statusActive.classList.remove("hidden");
-        latencyElement.textContent = `${latency}ms`;
-      } else {
-        statusDead.classList.remove("hidden");
-      }
-    })
-    .catch((error) => {
-      // Hide loading state
-      statusLoading.classList.add("hidden");
-      statusUnknown.classList.remove("hidden");
-      console.error("Fetch error:", error);
+  // Add listener for security changes
+  const securitySelect = document.getElementById(`${protocol}-security`);
+  if (securitySelect) {
+    securitySelect.addEventListener("change", function () {
+      const newTlsType = this.value === "tls" ? "TLS" : "NTLS";
+      nameInput.value = `${baseName} [${protocolName}-${newTlsType}]`;
     });
+  }
 }
 
-// Function to show proxy list section
+async function checkProxyStatusInCreation(proxy) {
+  const statusContainer = document.getElementById("proxy-status-container");
+  const statusLoading = document.getElementById("proxy-status-loading");
+  const statusActive = document.getElementById("proxy-status-active");
+  const statusDead = document.getElementById("proxy-status-dead");
+  const statusUnknown = document.getElementById("proxy-status-unknown");
+  const latencyElement = document.getElementById("proxy-latency");
+
+  // Show loading
+  statusContainer?.classList.remove("hidden");
+  statusLoading?.classList.remove("hidden");
+  statusActive?.classList.add("hidden");
+  statusDead?.classList.add("hidden");
+  statusUnknown?.classList.add("hidden");
+
+  const startTime = performance.now();
+
+  try {
+    const response = await fetch(
+      `${CONFIG.proxyStatusApi}/${proxy.ip}:${proxy.port}`
+    );
+    const data = await response.json();
+    const proxyData = Array.isArray(data) ? data[0] : data;
+
+    const latency = Math.floor(performance.now() - startTime);
+
+    statusLoading?.classList.add("hidden");
+
+    if (proxyData?.proxyip === true) {
+      statusActive?.classList.remove("hidden");
+      if (latencyElement) latencyElement.textContent = `${latency}ms`;
+    } else {
+      statusDead?.classList.remove("hidden");
+    }
+  } catch (error) {
+    console.error("Proxy status check error:", error);
+    statusLoading?.classList.add("hidden");
+    statusUnknown?.classList.remove("hidden");
+  }
+}
+
+// ============================================
+// Section Navigation
+// ============================================
 function showProxyListSection() {
-  proxyListSection.classList.remove("hidden");
-  accountCreationSection.classList.add("hidden");
-  resultSection.classList.add("hidden");
+  DOM.proxyListSection?.classList.remove("hidden");
+  DOM.accountCreationSection?.classList.add("hidden");
+  DOM.resultSection?.classList.add("hidden");
 }
 
-// Function to show account creation section
 function showAccountCreationSection() {
-  proxyListSection.classList.add("hidden");
-  accountCreationSection.classList.remove("hidden");
-  resultSection.classList.add("hidden");
-}
-
-// Update the loadProxyList function to better handle GitHub data and CORS issues
-function loadProxyList(url) {
-  // Show loading indicator
-  loadingIndicator.classList.remove("hidden");
-  proxyListContainer.innerHTML = "";
-  noProxiesMessage.classList.add("hidden");
-
-  // Try multiple CORS proxies in sequence
-  const corsProxies = [
-    // Direct fetch (no proxy)
-    async () => {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Direct fetch failed");
-      return await response.text();
-    },
-    // CORS Anywhere proxy
-    async () => {
-      const corsUrl = `https://cors-anywhere.herokuapp.com/${url}`;
-      const response = await fetch(corsUrl);
-      if (!response.ok) throw new Error("CORS Anywhere proxy failed");
-      return await response.text();
-    },
-    // AllOrigins proxy
-    async () => {
-      const corsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
-        url
-      )}`;
-      const response = await fetch(corsUrl);
-      if (!response.ok) throw new Error("AllOrigins proxy failed");
-      const data = await response.json();
-      return data.contents;
-    },
-    // CORS.sh proxy
-    async () => {
-      const corsUrl = `https://cors.sh/${url}`;
-      const response = await fetch(corsUrl, {
-        headers: {
-          "x-cors-api-key":
-            "temp_" + Math.random().toString(36).substring(2, 12),
-        },
-      });
-      if (!response.ok) throw new Error("CORS.sh proxy failed");
-      return await response.text();
-    },
-  ];
-
-  // Try each proxy in sequence
-  (async function tryProxies(index = 0) {
-    if (index >= corsProxies.length) {
-      console.error("All proxies failed");
-      loadingIndicator.classList.add("hidden");
-      noProxiesMessage.classList.remove("hidden");
-      // Fall back to sample data
-      displayFallbackProxyList();
-      return;
-    }
-
-    try {
-      const text = await corsProxies[index]();
-      console.log("Fetched data:", text.substring(0, 200) + "..."); // Debug log (truncated)
-      processProxyData(text);
-      loadingIndicator.classList.add("hidden");
-    } catch (error) {
-      console.error(`Proxy ${index} failed:`, error);
-      // Try next proxy
-      tryProxies(index + 1);
-    }
-  })();
+  DOM.proxyListSection?.classList.add("hidden");
+  DOM.accountCreationSection?.classList.remove("hidden");
+  DOM.resultSection?.classList.add("hidden");
 }
