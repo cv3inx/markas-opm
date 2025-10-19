@@ -41,7 +41,7 @@ async fn main(req: Request, env: Env, _: Context) -> Result<Response> {
         converter_page_url,
     };
 
-    // Get the URL path to determine if it's a resource request
+    // Get the URL path
     let url = req.url()?;
     let path = url.path();
 
@@ -54,18 +54,160 @@ async fn main(req: Request, env: Env, _: Context) -> Result<Response> {
         return handle_image_file(req).await;
     }
 
-    // For other routes, use the router - EXACTLY as in the original
+    // CRITICAL FIX: Check if this is a WebSocket upgrade request
+    // If not WebSocket, return early to prevent hang
+    let upgrade = req.headers().get("Upgrade").ok().flatten().unwrap_or_default();
+    
+    // If path matches tunnel route but NOT a WebSocket, return error immediately
+    if (path.starts_with("/MARKASOPM/") || (path.len() > 1 && path != "/" && path != "/sub" && path != "/link" && path != "/converter")) 
+        && upgrade != "websocket" {
+        return Response::error("WebSocket connection required for proxy tunnel", 400);
+    }
+
+    // Router
     Router::with_data(config)
         .on_async("/", fe)
         .on_async("/sub", sub)
         .on_async("/link", link)
         .on_async("/converter", converter)
-        .on_async("/:proxyip", tunnel)
         .on_async("/MARKASOPM/:proxyip", tunnel)
+        .on_async("/:proxyip", tunnel)
         .run(req, env)
         .await
 }
 
+async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> {
+    // CRITICAL: Verify this is a WebSocket request FIRST
+    let upgrade = match req.headers().get("Upgrade") {
+        Ok(Some(val)) => val,
+        _ => return Response::error("WebSocket Upgrade header required", 400),
+    };
+    
+    if upgrade != "websocket" {
+        return Response::error("This endpoint requires WebSocket connection", 400);
+    }
+
+    let mut proxyip = match cx.param("proxyip") {
+        Some(p) => p.to_string(),
+        None => return Response::error("Missing proxyip parameter", 400),
+    };
+    
+    // Handle KV proxy lookup
+    if PROXYKV_PATTERN.is_match(&proxyip) {
+        let kvid_list: Vec<String> = proxyip.split(",").map(|s| s.to_string()).collect();
+        
+        if kvid_list.is_empty() {
+            return Response::error("Empty proxy list", 400);
+        }
+        
+        let kv = match cx.kv("opm") {
+            Ok(k) => k,
+            Err(e) => {
+                console_log!("KV error: {}", e);
+                return Response::error("KV store not available", 500);
+            }
+        };
+        
+        let mut proxy_kv_str = kv.get("proxy_kv").text().await?.unwrap_or_default();
+        let mut rand_buf = [0u8; 2];
+        
+        if let Err(e) = getrandom::getrandom(&mut rand_buf) {
+            console_log!("Random generation failed: {}", e);
+            return Response::error("Failed to generate random number", 500);
+        }
+
+        if proxy_kv_str.is_empty() {
+            console_log!("Fetching proxy KV from GitHub...");
+            
+            let fetch_req = Fetch::Url(Url::parse("https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json")?);
+            let mut res = fetch_req.send().await?;
+            
+            if res.status_code() == 200 {
+                proxy_kv_str = res.text().await?;
+                if let Err(e) = kv.put("proxy_kv", &proxy_kv_str)?.expiration_ttl(60 * 60 * 24).execute().await {
+                    console_log!("Failed to cache proxy KV: {}", e);
+                }
+            } else {
+                return Response::error(&format!("Failed to fetch proxy config: {}", res.status_code()), 500);
+            }
+        }
+
+        let proxy_kv: HashMap<String, Vec<String>> = match serde_json::from_str(&proxy_kv_str) {
+            Ok(kv) => kv,
+            Err(e) => {
+                console_log!("Failed to parse proxy_kv JSON: {}", e);
+                return Response::error("Invalid proxy configuration format", 500);
+            }
+        };
+
+        let kv_index = (rand_buf[0] as usize) % kvid_list.len();
+        proxyip = kvid_list[kv_index].clone();
+
+        match proxy_kv.get(&proxyip) {
+            Some(proxy_list) if !proxy_list.is_empty() => {
+                let proxyip_index = (rand_buf[0] as usize) % proxy_list.len();
+                proxyip = proxy_list[proxyip_index].clone().replace(":", "-");
+            }
+            Some(_) => return Response::error(&format!("No proxies available for region {}", proxyip), 500),
+            None => return Response::error(&format!("Proxy region {} not found", proxyip), 404),
+        }
+    }
+
+    // Parse proxy IP and port
+    if PROXYIP_PATTERN.is_match(&proxyip) {
+        if let Some((addr, port_str)) = proxyip.split_once('-') {
+            if let Ok(port) = port_str.parse() {
+                cx.data.proxy_addr = addr.to_string();
+                cx.data.proxy_port = port;
+                console_log!("Using proxy: {}:{}", addr, port);
+            } else {
+                return Response::error("Invalid proxy port", 400);
+            }
+        }
+    } else {
+        return Response::error("Invalid proxy format (expected: IP-PORT)", 400);
+    }
+
+    // Create WebSocket pair
+    let WebSocketPair { server, client } = match WebSocketPair::new() {
+        Ok(pair) => pair,
+        Err(e) => {
+            console_log!("Failed to create WebSocket pair: {:?}", e);
+            return Response::error("Failed to create WebSocket connection", 500);
+        }
+    };
+    
+    if let Err(e) = server.accept() {
+        console_log!("Failed to accept WebSocket: {:?}", e);
+        return Response::error("Failed to accept WebSocket", 500);
+    }
+
+    // Spawn WebSocket handler with timeout protection
+    wasm_bindgen_futures::spawn_local(async move {
+        console_log!("[tunnel] WebSocket connection established");
+        
+        match server.events() {
+            Ok(events) => {
+                // Process the proxy stream
+                match ProxyStream::new(cx.data, &server, events).process().await {
+                    Ok(_) => console_log!("[tunnel] WebSocket closed normally"),
+                    Err(e) => {
+                        console_log!("[tunnel] ProxyStream error: {}", e);
+                        let _ = server.close(Some(1011), Some("Proxy error"));
+                    }
+                }
+            }
+            Err(e) => {
+                console_log!("[tunnel] Failed to get WebSocket events: {:?}", e);
+                let _ = server.close(Some(1011), Some("Internal error"));
+            }
+        }
+        
+        console_log!("[tunnel] Handler completed");
+    });
+
+    Response::from_websocket(client)
+}
 // Handler for CSS files - fetch from GitHub
 async fn handle_css_file(req: Request) -> Result<Response> {
     let url = req.url()?;
