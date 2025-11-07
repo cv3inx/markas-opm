@@ -1,323 +1,222 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="black">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Markas OPM || Converter</title>
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Markas OPM || Converter</title>
 
-    <link
-      rel="icon"
-      href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png"
-    />
+      <link rel="icon" href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png" />
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+      <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="css/app.css">
-  </head>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      <link rel="stylesheet" href="css/app.css" />
+   </head>
 
-  <body
-    class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white"
-  >
-    <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
-      <div class="card glass-pane shadow-2xl rounded-2xl">
-        <div class="card-body p-6 md:p-8">
-          <header class="text-center mb-6">
-            <h1
-              class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
-            >
-              MARKAS OPM
-            </h1>
-            <p class="text-white/60 tracking-widest mt-1 text-sm">
-              V2Ray ↔ Clash Converter
+   <body class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white">
+      <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
+         <div class="card glass-pane shadow-2xl rounded-2xl">
+            <div class="card-body p-6 md:p-8">
+               <header class="text-center mb-6">
+                  <h1 class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">MARKAS OPM</h1>
+                  <p class="text-white/60 tracking-widest mt-1 text-sm">V2Ray ↔ Clash Converter</p>
+               </header>
+
+               <nav role="tablist" class="tabs tabs-bordered">
+                  <a role="tab" href="/" class="tab text-lg">Home</a>
+                  <a role="tab" href="sub" class="tab text-lg">Subscription</a>
+                  <a role="tab" href="link" class="tab text-lg">Link Generator</a>
+                  <a role="tab" class="tab tab-active text-lg">Converter</a>
+               </nav>
+
+               <div class="mt-6">
+                  <div role="tablist" id="direction-selector" class="tabs tabs-boxed grid grid-cols-2">
+                     <button role="tab" id="v2ray-to-config" class="tab tab-active">V2Ray → Config</button>
+                     <button role="tab" id="config-to-v2ray" class="tab">Config → V2Ray</button>
+                  </div>
+
+                  <div id="v2ray-to-config-section" class="converter-section mt-4 space-y-4">
+                     <div class="form-control">
+                        <label class="label"><span class="label-text">V2Ray Links (vmess://, vless://, etc.)</span></label>
+                        <textarea
+                           id="v2ray-input"
+                           class="textarea textarea-bordered h-32 font-mono text-xs"
+                           placeholder="Paste your V2Ray links here, one per line..."
+                        ></textarea>
+                     </div>
+
+                     <div class="form-control">
+                        <label class="label"><span class="label-text">Output Format</span></label>
+                        <div class="join grid grid-cols-2">
+                           <button id="clash-format" class="btn join-item btn-active">Clash</button>
+                           <button id="nekobox-format" class="btn join-item">Nekobox</button>
+                        </div>
+                     </div>
+
+                     <div id="clash-options" class="p-4 rounded-lg bg-black/20 border border-white/10 space-y-3">
+                        <h3 class="font-bold text-center text-white/50 text-sm">CLASH OPTIONS</h3>
+                        <div class="form-control">
+                           <label class="label cursor-pointer p-0"><span class="label-text">DNS Mode</span></label>
+                           <div class="join grid grid-cols-2 mt-1">
+                              <button id="fake-ip" class="btn btn-sm join-item btn-active">Fake IP</button>
+                              <button id="redir-host" class="btn btn-sm join-item">Redir Host</button>
+                           </div>
+                        </div>
+                        <div class="form-control">
+                           <label class="label cursor-pointer p-0"><span class="label-text">Proxy Groups</span></label>
+                           <div class="join grid grid-cols-4 mt-1">
+                              <button id="best-ping" class="btn btn-xs join-item btn-active">Best Ping</button>
+                              <button id="load-balance" class="btn btn-xs join-item">Load Balance</button>
+                              <button id="fallback" class="btn btn-xs join-item">Fallback</button>
+                              <button id="all-groups" class="btn btn-xs join-item">All</button>
+                           </div>
+                        </div>
+                        <div class="form-control">
+                           <label class="label cursor-pointer p-0"><span class="label-text">Rule Sets</span></label>
+                           <div class="join grid grid-cols-2 mt-1">
+                              <button id="ads-block" class="btn btn-sm join-item btn-active">Ads Block</button>
+                              <button id="porn-block" class="btn btn-sm join-item btn-active">Porn Block</button>
+                           </div>
+                        </div>
+                     </div>
+
+                     <button id="convert-v2ray" class="btn btn-neutral w-full !mt-6">
+                        <i class="fas fa-sync-alt"></i>
+                        Convert
+                     </button>
+
+                     <div class="form-control">
+                        <div class="flex justify-between items-center">
+                           <label class="label"><span class="label-text">Result</span></label>
+                           <div class="space-x-1">
+                              <button id="copy-config" class="btn btn-ghost btn-xs">
+                                 <i class="far fa-copy"></i>
+                                 Copy
+                              </button>
+                              <button id="save-proxy-provider" class="btn btn-ghost btn-xs">
+                                 <i class="fas fa-download"></i>
+                                 Save Proxy
+                              </button>
+                              <button id="save-full-config" class="btn btn-ghost btn-xs">
+                                 <i class="fas fa-file-download"></i>
+                                 Save Full
+                              </button>
+                           </div>
+                        </div>
+                        <textarea
+                           id="config-output"
+                           class="textarea textarea-bordered h-32 font-mono text-xs"
+                           readonly
+                           placeholder="Converted configuration will appear here..."
+                        ></textarea>
+                     </div>
+                  </div>
+
+                  <div id="config-to-v2ray-section" class="converter-section mt-4 space-y-4 hidden">
+                     <div class="form-control">
+                        <label class="label"><span class="label-text">Configuration</span></label>
+                        <textarea
+                           id="config-input"
+                           class="textarea textarea-bordered h-32 font-mono text-xs"
+                           placeholder="Paste your Clash or Nekobox configuration here..."
+                        ></textarea>
+                     </div>
+                     <button id="convert-config" class="btn btn-neutral w-full">
+                        <i class="fas fa-sync-alt"></i>
+                        Convert
+                     </button>
+                     <div class="form-control">
+                        <div class="flex justify-between items-center">
+                           <label class="label"><span class="label-text">Result</span></label>
+                           <div class="space-x-1">
+                              <button id="copy-v2ray" class="btn btn-ghost btn-xs">
+                                 <i class="far fa-copy"></i>
+                                 Copy
+                              </button>
+                              <button id="save-v2ray-links" class="btn btn-ghost btn-xs">
+                                 <i class="fas fa-download"></i>
+                                 Save Links
+                              </button>
+                           </div>
+                        </div>
+                        <textarea
+                           id="v2ray-output"
+                           class="textarea textarea-bordered h-32 font-mono text-xs"
+                           readonly
+                           placeholder="Converted V2Ray links will appear here..."
+                        ></textarea>
+                     </div>
+                  </div>
+
+                  <div id="loading-indicator" class="text-center py-6 hidden">
+                     <span class="loading loading-dots loading-lg"></span>
+                     <p class="text-white/60 mt-2 text-sm">Converting...</p>
+                  </div>
+                  <div id="error-message" class="alert alert-error hidden"></div>
+               </div>
+            </div>
+         </div>
+
+         <footer class="text-center p-4 mt-4 text-sm text-white/50">
+            <p>
+               ©
+               <span id="current-year"></span>
+               MARKAS OPM PROJECT —
+               <a href="https://t.me/shouwee" class="link link-hover text-white/80" target="_blank">Contact Admin</a>
             </p>
-          </header>
+         </footer>
+      </main>
 
-          <nav role="tablist" class="tabs tabs-bordered">
-            <a role="tab" href="/" class="tab text-lg">Home</a>
-            <a role="tab" href="sub" class="tab text-lg">Subscription</a>
-            <a role="tab" href="link" class="tab text-lg">Link Generator</a>
-            <a role="tab" class="tab tab-active text-lg">Converter</a>
-          </nav>
-
-          <div class="mt-6">
-            <div
-              role="tablist"
-              id="direction-selector"
-              class="tabs tabs-boxed grid grid-cols-2"
-            >
-              <button role="tab" id="v2ray-to-config" class="tab tab-active">
-                V2Ray → Config
-              </button>
-              <button role="tab" id="config-to-v2ray" class="tab">
-                Config → V2Ray
-              </button>
+      <button class="btn btn-neutral btn-circle fixed bottom-4 right-4 animate-pulse" onclick="donation_modal.showModal()">
+         <i class="fas fa-hand-holding-heart text-xl"></i>
+      </button>
+      <dialog id="donation_modal" class="modal">
+         <div class="modal-box text-center glass-pane">
+            <h3 class="font-bold text-lg font-orbitron">Support Us!</h3>
+            <p class="py-4 text-white/80">Your donation keeps our services running. Thank you! 🙏</p>
+            <div class="bg-white p-2 rounded-lg inline-block">
+               <img src="https://x.fairy.my.id/f/POzuPGfJ42ir.png" alt="QR Code" class="w-full max-w-xs mx-auto" />
             </div>
-
-            <div
-              id="v2ray-to-config-section"
-              class="converter-section mt-4 space-y-4"
-            >
-              <div class="form-control">
-                <label class="label"
-                  ><span class="label-text"
-                    >V2Ray Links (vmess://, vless://, etc.)</span
-                  ></label
-                >
-                <textarea
-                  id="v2ray-input"
-                  class="textarea textarea-bordered h-32 font-mono text-xs"
-                  placeholder="Paste your V2Ray links here, one per line..."
-                ></textarea>
-              </div>
-
-              <div class="form-control">
-                <label class="label"
-                  ><span class="label-text">Output Format</span></label
-                >
-                <div class="join grid grid-cols-2">
-                  <button id="clash-format" class="btn join-item btn-active">
-                    Clash
-                  </button>
-                  <button id="nekobox-format" class="btn join-item">
-                    Nekobox
-                  </button>
-                </div>
-              </div>
-
-              <div
-                id="clash-options"
-                class="p-4 rounded-lg bg-black/20 border border-white/10 space-y-3"
-              >
-                <h3 class="font-bold text-center text-white/50 text-sm">
-                  CLASH OPTIONS
-                </h3>
-                <div class="form-control">
-                  <label class="label cursor-pointer p-0"
-                    ><span class="label-text">DNS Mode</span></label
-                  >
-                  <div class="join grid grid-cols-2 mt-1">
-                    <button
-                      id="fake-ip"
-                      class="btn btn-sm join-item btn-active"
-                    >
-                      Fake IP
-                    </button>
-                    <button id="redir-host" class="btn btn-sm join-item">
-                      Redir Host
-                    </button>
-                  </div>
-                </div>
-                <div class="form-control">
-                  <label class="label cursor-pointer p-0"
-                    ><span class="label-text">Proxy Groups</span></label
-                  >
-                  <div class="join grid grid-cols-4 mt-1">
-                    <button
-                      id="best-ping"
-                      class="btn btn-xs join-item btn-active"
-                    >
-                      Best Ping
-                    </button>
-                    <button id="load-balance" class="btn btn-xs join-item">
-                      Load Balance
-                    </button>
-                    <button id="fallback" class="btn btn-xs join-item">
-                      Fallback
-                    </button>
-                    <button id="all-groups" class="btn btn-xs join-item">
-                      All
-                    </button>
-                  </div>
-                </div>
-                <div class="form-control">
-                  <label class="label cursor-pointer p-0"
-                    ><span class="label-text">Rule Sets</span></label
-                  >
-                  <div class="join grid grid-cols-2 mt-1">
-                    <button
-                      id="ads-block"
-                      class="btn btn-sm join-item btn-active"
-                    >
-                      Ads Block
-                    </button>
-                    <button
-                      id="porn-block"
-                      class="btn btn-sm join-item btn-active"
-                    >
-                      Porn Block
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <button id="convert-v2ray" class="btn btn-neutral w-full !mt-6">
-                <i class="fas fa-sync-alt"></i> Convert
-              </button>
-
-              <div class="form-control">
-                <div class="flex justify-between items-center">
-                  <label class="label"
-                    ><span class="label-text">Result</span></label
-                  >
-                  <div class="space-x-1">
-                    <button id="copy-config" class="btn btn-ghost btn-xs">
-                      <i class="far fa-copy"></i> Copy
-                    </button>
-                    <button
-                      id="save-proxy-provider"
-                      class="btn btn-ghost btn-xs"
-                    >
-                      <i class="fas fa-download"></i> Save Proxy
-                    </button>
-                    <button id="save-full-config" class="btn btn-ghost btn-xs">
-                      <i class="fas fa-file-download"></i> Save Full
-                    </button>
-                  </div>
-                </div>
-                <textarea
-                  id="config-output"
-                  class="textarea textarea-bordered h-32 font-mono text-xs"
-                  readonly
-                  placeholder="Converted configuration will appear here..."
-                ></textarea>
-              </div>
+            <div class="modal-action">
+               <form method="dialog">
+                  <button class="btn btn-secondary w-full">Close</button>
+               </form>
             </div>
+         </div>
+         <form method="dialog" class="modal-backdrop"><button>close</button></form>
+      </dialog>
 
-            <div
-              id="config-to-v2ray-section"
-              class="converter-section mt-4 space-y-4 hidden"
-            >
-              <div class="form-control">
-                <label class="label"
-                  ><span class="label-text">Configuration</span></label
-                >
-                <textarea
-                  id="config-input"
-                  class="textarea textarea-bordered h-32 font-mono text-xs"
-                  placeholder="Paste your Clash or Nekobox configuration here..."
-                ></textarea>
-              </div>
-              <button id="convert-config" class="btn btn-neutral w-full">
-                <i class="fas fa-sync-alt"></i> Convert
-              </button>
-              <div class="form-control">
-                <div class="flex justify-between items-center">
-                  <label class="label"
-                    ><span class="label-text">Result</span></label
-                  >
-                  <div class="space-x-1">
-                    <button id="copy-v2ray" class="btn btn-ghost btn-xs">
-                      <i class="far fa-copy"></i> Copy
-                    </button>
-                    <button id="save-v2ray-links" class="btn btn-ghost btn-xs">
-                      <i class="fas fa-download"></i> Save Links
-                    </button>
-                  </div>
-                </div>
-                <textarea
-                  id="v2ray-output"
-                  class="textarea textarea-bordered h-32 font-mono text-xs"
-                  readonly
-                  placeholder="Converted V2Ray links will appear here..."
-                ></textarea>
-              </div>
-            </div>
+      <script>
+         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('current-year').textContent = new Date().getFullYear()
 
-            <div id="loading-indicator" class="text-center py-6 hidden">
-              <span class="loading loading-dots loading-lg"></span>
-              <p class="text-white/60 mt-2 text-sm">Converting...</p>
-            </div>
-            <div id="error-message" class="alert alert-error hidden"></div>
-          </div>
-        </div>
-      </div>
+            // Simple logic to switch between converter sections
+            const v2rayToConfigBtn = document.getElementById('v2ray-to-config')
+            const configToV2rayBtn = document.getElementById('config-to-v2ray')
+            const v2raySection = document.getElementById('v2ray-to-config-section')
+            const configSection = document.getElementById('config-to-v2ray-section')
 
-      <footer class="text-center p-4 mt-4 text-sm text-white/50">
-        <p>
-          © <span id="current-year"></span> MARKAS OPM PROJECT —
-          <a
-            href="https://t.me/shouwee"
-            class="link link-hover text-white/80"
-            target="_blank"
-            >Contact Admin</a
-          >
-        </p>
-      </footer>
-    </main>
+            v2rayToConfigBtn.addEventListener('click', () => {
+               v2rayToConfigBtn.classList.add('tab-active')
+               configToV2rayBtn.classList.remove('tab-active')
+               v2raySection.classList.remove('hidden')
+               configSection.classList.add('hidden')
+            })
 
-    <button
-      class="btn btn-neutral btn-circle fixed bottom-4 right-4 animate-pulse"
-      onclick="donation_modal.showModal()"
-    >
-      <i class="fas fa-hand-holding-heart text-xl"></i>
-    </button>
-    <dialog id="donation_modal" class="modal">
-      <div class="modal-box text-center glass-pane">
-        <h3 class="font-bold text-lg font-orbitron">Support Us!</h3>
-        <p class="py-4 text-white/80">
-          Your donation keeps our services running. Thank you! 🙏
-        </p>
-        <div class="bg-white p-2 rounded-lg inline-block">
-          <img
-            src="https://x.fairy.my.id/f/POzuPGfJ42ir.png"
-            alt="QR Code"
-            class="w-full max-w-xs mx-auto"
-          />
-        </div>
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-outline w-full">Close</button>
-          </form>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("current-year").textContent =
-          new Date().getFullYear();
-
-        // Simple logic to switch between converter sections
-        const v2rayToConfigBtn = document.getElementById("v2ray-to-config");
-        const configToV2rayBtn = document.getElementById("config-to-v2ray");
-        const v2raySection = document.getElementById("v2ray-to-config-section");
-        const configSection = document.getElementById(
-          "config-to-v2ray-section"
-        );
-
-        v2rayToConfigBtn.addEventListener("click", () => {
-          v2rayToConfigBtn.classList.add("tab-active");
-          configToV2rayBtn.classList.remove("tab-active");
-          v2raySection.classList.remove("hidden");
-          configSection.classList.add("hidden");
-        });
-
-        configToV2rayBtn.addEventListener("click", () => {
-          configToV2rayBtn.classList.add("tab-active");
-          v2rayToConfigBtn.classList.remove("tab-active");
-          configSection.classList.remove("hidden");
-          v2raySection.classList.add("hidden");
-        });
-      });
-    </script>
-    <script src="js/common.js"></script>
-    <script src="js/converter.js"></script>
-  </body>
+            configToV2rayBtn.addEventListener('click', () => {
+               configToV2rayBtn.classList.add('tab-active')
+               v2rayToConfigBtn.classList.remove('tab-active')
+               configSection.classList.remove('hidden')
+               v2raySection.classList.add('hidden')
+            })
+         })
+      </script>
+      <script src="js/common.js"></script>
+      <script src="js/converter.js"></script>
+   </body>
 </html>

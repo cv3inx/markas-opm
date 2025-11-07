@@ -4,778 +4,635 @@
 
 // Configuration
 const CONFIG = {
-  proxyListUrl:
-    "https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt",
-  apiCheckUrl: "https://api.jb8fd7grgd.workers.dev",
-  mainDomains: ["markas-opm.pp.ua"],
-  defaultUuid: "bbbbbbbb-opeem-jiir-ffffffffffff",
-  maxProxies: 50,
-  defaultProxyCount: 5,
-  pathTemplate: "/MARKASOPM/{ip}-{port}",
-};
+   proxyListUrl: 'https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt',
+   apiCheckUrl: 'https://api.jb8fd7grgd.workers.dev',
+   mainDomains: ['markas-opm.pp.ua'],
+   defaultUuid: 'bbbbbbbb-opeem-jiir-ffffffffffff',
+   maxProxies: 50,
+   defaultProxyCount: 5,
+   pathTemplate: '/MARKASOPM/{ip}-{port}',
+   batchSize: 5, // Jumlah proxy yang divalidasi secara paralel dalam satu batch
+   loadingMessages: {
+      fetchProxies: 'Fetching proxy list...',
+      generateConfig: 'Generating configuration...'
+   },
+   validationStatus: {
+      validating: 'Validating proxies...',
+      complete: 'Validation complete.'
+   },
+   successMessages: {
+      copied: 'COPIED SUCCESSFULLY',
+      copyDefault: 'COPY CONFIGURATION'
+   },
+   errorMessages: {
+      fetchProxies: 'Failed to load proxy list. Please try again later.',
+      noProxies: 'No proxies found in the proxy list.',
+      noProxiesFiltered: 'No proxies found with the selected criteria.',
+      invalidCount: 'Proxy count must be between 1 and ',
+      noUuid: 'Please enter a UUID.',
+      apiCheck: 'Error validating proxy: ',
+      base64Encode: 'Error encoding base64: '
+   }
+}
 
-// Global variables
-let proxyList = [];
-let filteredProxyList = [];
-let validatedProxies = [];
-let validationInProgress = false;
-let totalValidated = 0;
-let validCount = 0;
-let invalidCount = 0;
-
-// DOM Elements
-const form = document.getElementById("subLinkForm");
-const configTypeSelect = document.getElementById("configType");
-const formatTypeSelect = document.getElementById("formatType");
-const uuidInput = document.getElementById("uuid");
-const generateUuidBtn = document.getElementById("generateUuid");
-const bugTypeSelect = document.getElementById("bugType");
-const mainDomainSelect = document.getElementById("mainDomain");
-const customBugContainer = document.getElementById("customBugContainer");
-const customBugInput = document.getElementById("customBug");
-const tlsSelect = document.getElementById("tls");
-const countrySelect = document.getElementById("country");
-const limitInput = document.getElementById("limit");
-const validateProxiesCheckbox = document.getElementById("validateProxies");
-const loadingElement = document.getElementById("loading");
-const validationStatusElement = document.getElementById("validation-status");
-const validationCountElement = document.getElementById("validation-count");
-const validationBarElement = document.getElementById("validation-bar");
-const validCountElement = document.getElementById("valid-count");
-const invalidCountElement = document.getElementById("invalid-count");
-const errorMessageElement = document.getElementById("error-message");
-const resultElement = document.getElementById("result");
-const outputElement = document.getElementById("output");
-const copyLinkBtn = document.getElementById("copyLink");
-
-// Utility functions (UUID, copy to clipboard, base64 encode)
+// Utility functions
 function generateUUIDv4() {
-  return crypto.randomUUID();
+   return crypto.randomUUID()
 }
 
 async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (err) {
-    console.error("Failed to copy: ", err);
-    return false;
-  }
+   try {
+      await navigator.clipboard.writeText(text)
+      return true
+   } catch (err) {
+      console.error('Failed to copy: ', err)
+      return false
+   }
 }
 
 function safeBase64Encode(str) {
-  try {
-    return btoa(unescape(encodeURIComponent(str)));
-  } catch (e) {
-    console.error("Error encoding base64:", e);
-    return "";
-  }
+   try {
+      // encodeURIComponent handles non-ASCII characters before btoa
+      return btoa(unescape(encodeURIComponent(str)))
+   } catch (e) {
+      console.error(CONFIG.errorMessages.base64Encode, e)
+      return ''
+   }
 }
 
+function shuffleArray(array) {
+   for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[array[i], array[j]] = [array[j], array[i]]
+   }
+   return array
+}
+
+// Global variables
+let proxyList = []
+let filteredProxyList = []
+let validatedProxies = []
+let validationInProgress = false
+let totalValidated = 0
+let validCount = 0
+let invalidCount = 0
+
+// DOM Elements
+let form, configTypeSelect, formatTypeSelect, uuidInput, generateUuidBtn, bugTypeSelect
+let mainDomainSelect, customBugContainer, customBugInput, tlsSelect, countrySelect, limitInput
+let validateProxiesCheckbox, loadingElement, validationStatusElement, validationCountElement
+let validationBarElement, validCountElement, invalidCountElement, errorMessageElement
+let resultElement, outputElement, copyLinkBtn, loadingTextElement
+
 // Initialize the page
-document.addEventListener("DOMContentLoaded", () => {
-  // Populate main domains dropdown
-  populateMainDomains();
+document.addEventListener('DOMContentLoaded', () => {
+   // Get DOM elements
+   form = document.getElementById('subLinkForm')
+   configTypeSelect = document.getElementById('configType')
+   formatTypeSelect = document.getElementById('formatType')
+   uuidInput = document.getElementById('uuid')
+   generateUuidBtn = document.getElementById('generateUuid')
+   bugTypeSelect = document.getElementById('bugType')
+   mainDomainSelect = document.getElementById('mainDomain')
+   customBugContainer = document.getElementById('customBugContainer')
+   customBugInput = document.getElementById('customBug')
+   tlsSelect = document.getElementById('tls')
+   countrySelect = document.getElementById('country')
+   limitInput = document.getElementById('limit')
+   validateProxiesCheckbox = document.getElementById('validateProxies')
+   loadingElement = document.getElementById('loading')
+   loadingTextElement = document.getElementById('loading-text') // Ambil elemen teks loading
+   validationStatusElement = document.getElementById('validation-status')
+   validationCountElement = document.getElementById('validation-count')
+   validationBarElement = document.getElementById('validation-bar')
+   validCountElement = document.getElementById('valid-count')
+   invalidCountElement = document.getElementById('invalid-count')
+   errorMessageElement = document.getElementById('error-message')
+   resultElement = document.getElementById('result')
+   outputElement = document.getElementById('output')
+   copyLinkBtn = document.getElementById('copyLink')
 
-  // Set up event listeners
-  setupEventListeners();
+   // Populate main domains dropdown
+   populateMainDomains()
 
-  // Load proxy list
-  loadProxyList();
-});
+   // Set up event listeners
+   setupEventListeners()
+
+   // Load proxy list
+   loadProxyList()
+})
 
 // Populate main domains dropdown
 function populateMainDomains() {
-  CONFIG.mainDomains.forEach((domain) => {
-    const option = document.createElement("option");
-    option.value = domain;
-    option.textContent = domain;
-    mainDomainSelect.appendChild(option);
-  });
+   CONFIG.mainDomains.forEach(domain => {
+      const option = document.createElement('option')
+      option.value = domain
+      option.textContent = domain
+      mainDomainSelect.appendChild(option)
+   })
 }
 
 // Set up event listeners
 function setupEventListeners() {
-  // Generate UUID button
-  generateUuidBtn.addEventListener("click", () => {
-    uuidInput.value = generateUUIDv4();
-  });
+   // Generate UUID button
+   generateUuidBtn.addEventListener('click', () => {
+      uuidInput.value = generateUUIDv4()
+   })
 
-  // Bug type change
-  bugTypeSelect.addEventListener("change", () => {
-    if (
-      bugTypeSelect.value === "non-wildcard" ||
-      bugTypeSelect.value === "wildcard"
-    ) {
-      customBugContainer.style.display = "block";
-    } else {
-      customBugContainer.style.display = "none";
-    }
-  });
+   // Bug type change
+   bugTypeSelect.addEventListener('change', () => {
+      customBugContainer.style.display = bugTypeSelect.value === 'non-wildcard' || bugTypeSelect.value === 'wildcard' ? 'block' : 'none'
+   })
 
-  // Form submission
-  form.addEventListener("submit", handleFormSubmit);
+   // Form submission
+   form.addEventListener('submit', handleFormSubmit)
 
-  // Copy link button
-  copyLinkBtn.addEventListener("click", () => {
-    copyToClipboard(outputElement.value).then((success) => {
+   // Copy link button
+   copyLinkBtn.addEventListener('click', async () => {
+      const success = await copyToClipboard(outputElement.value)
       if (success) {
-        copyLinkBtn.innerHTML = `
-            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            COPIED SUCCESSFULLY
-          `;
-        setTimeout(() => {
-          copyLinkBtn.innerHTML = `
-              <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              COPY CONFIGURATION
-            `;
-        }, 2000);
+         copyLinkBtn.innerHTML = `
+        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        ${CONFIG.successMessages.copied}
+      `
+         setTimeout(() => {
+            copyLinkBtn.innerHTML = `
+          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          ${CONFIG.successMessages.copyDefault}
+        `
+         }, 2000)
       }
-    });
-  });
+   })
 }
 
 // Load proxy list
-function loadProxyList() {
-  showLoading("Fetching proxy list...");
+async function loadProxyList() {
+   showLoading(CONFIG.loadingMessages.fetchProxies)
 
-  fetch(CONFIG.proxyListUrl)
-    .then((response) => {
+   try {
+      const response = await fetch(CONFIG.proxyListUrl)
       if (!response.ok) {
-        throw new Error("Failed to fetch proxy list");
+         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.text();
-    })
-    .then((data) => {
-      processProxyData(data);
-      hideLoading();
-    })
-    .catch((error) => {
-      console.error("Error loading proxy list:", error);
-      showError("Failed to load proxy list. Please try again later.");
-      hideLoading();
-    });
+      const data = await response.text()
+      processProxyData(data)
+   } catch (error) {
+      console.error('Error loading proxy list:', error)
+      showError(CONFIG.errorMessages.fetchProxies)
+   } finally {
+      hideLoading()
+   }
 }
 
 // Process proxy data
 function processProxyData(data) {
-  // Split by lines and filter empty lines
-  const lines = data.split(/\r?\n/).filter((line) => line.trim() !== "");
+   const lines = data.split(/\r?\n/).filter(line => line.trim() !== '')
 
-  if (lines.length === 0) {
-    showError("No proxies found in the proxy list.");
-    return;
-  }
+   if (lines.length === 0) {
+      showError(CONFIG.errorMessages.noProxies)
+      return
+   }
 
-  // Determine delimiter
-  let delimiter = ",";
-  const firstLine = lines[0];
-  if (firstLine.includes("\t")) {
-    delimiter = "\t";
-  } else if (firstLine.includes("|")) {
-    delimiter = "|";
-  } else if (firstLine.includes(";")) {
-    delimiter = ";";
-  }
+   // Determine delimiter
+   let delimiter = ','
+   const firstLine = lines[0]
+   if (firstLine.includes('\t')) {
+      delimiter = '\t'
+   } else if (firstLine.includes('|')) {
+      delimiter = '|'
+   } else if (firstLine.includes(';')) {
+      delimiter = ';'
+   }
 
-  // Parse proxy list
-  proxyList = lines
-    .map((line) => {
-      const parts = line.split(delimiter);
-      if (parts.length >= 2) {
-        return {
-          ip: parts[0].trim(),
-          port: parts[1].trim(),
-          country: parts.length >= 3 ? parts[2].trim() : "Unknown",
-          provider: parts.length >= 4 ? parts[3].trim() : "Unknown Provider",
-        };
-      }
-      return null;
-    })
-    .filter((proxy) => proxy && proxy.ip && proxy.port);
+   // Parse proxy list
+   proxyList = lines
+      .map(line => {
+         const parts = line.split(delimiter)
+         if (parts.length >= 2) {
+            return {
+               ip: parts[0].trim(),
+               port: parts[1].trim(),
+               country: parts.length >= 3 ? parts[2].trim() : 'Unknown',
+               provider: parts.length >= 4 ? parts[3].trim() : 'Unknown Provider'
+            }
+         }
+         return null
+      })
+      .filter(proxy => proxy && proxy.ip && proxy.port)
 
-  // Populate country dropdown
-  populateCountryDropdown();
+   // Populate country dropdown
+   populateCountryDropdown()
 }
 
 // Populate country dropdown
 function populateCountryDropdown() {
-  // Get unique countries
-  const countries = [...new Set(proxyList.map((proxy) => proxy.country))];
-  countries.sort();
+   // Get unique countries using Set for efficiency
+   const countries = [...new Set(proxyList.map(proxy => proxy.country))]
+   countries.sort()
 
-  // Clear existing options
-  countrySelect.innerHTML = "";
+   // Clear existing options
+   countrySelect.innerHTML = ''
 
-  // Add "All Countries" option
-  const allOption = document.createElement("option");
-  allOption.value = "";
-  allOption.textContent = "All Countries";
-  countrySelect.appendChild(allOption);
+   // Add "All Countries" option
+   const allOption = document.createElement('option')
+   allOption.value = ''
+   allOption.textContent = 'All Countries'
+   countrySelect.appendChild(allOption)
 
-  // Add country options
-  countries.forEach((country) => {
-    const option = document.createElement("option");
-    option.value = country;
-    option.textContent = country;
-    countrySelect.appendChild(option);
-  });
+   // Add country options
+   countries.forEach(country => {
+      const option = document.createElement('option')
+      option.value = country
+      option.textContent = country
+      countrySelect.appendChild(option)
+   })
 }
 
 // Handle form submission
 async function handleFormSubmit(e) {
-  e.preventDefault();
+   e.preventDefault()
 
-  // Reset error message
-  errorMessageElement.textContent = "";
-  errorMessageElement.style.display = "none";
+   // Reset error message
+   hideError()
 
-  // Get form values
-  const configType = configTypeSelect.value;
-  const formatType = formatTypeSelect.value;
-  const uuid = uuidInput.value;
-  const bugType = bugTypeSelect.value;
-  const mainDomain = mainDomainSelect.value;
-  const customBug = customBugInput.value;
-  const useTls = tlsSelect.value === "true";
-  const country = countrySelect.value;
-  const limit = Number.parseInt(limitInput.value, 10);
-  const validateProxies = validateProxiesCheckbox.checked;
+   // Get form values
+   const configType = configTypeSelect.value
+   const formatType = formatTypeSelect.value
+   const uuid = uuidInput.value.trim()
+   const bugType = bugTypeSelect.value
+   const mainDomain = mainDomainSelect.value
+   const customBug = customBugInput.value.trim()
+   const useTls = tlsSelect.value === 'true'
+   const country = countrySelect.value
+   const limit = Number.parseInt(limitInput.value, 10)
+   const validateProxies = validateProxiesCheckbox.checked
 
-  // Validate inputs
-  if (!uuid) {
-    showError("Please enter a UUID.");
-    return;
-  }
+   // Validate inputs
+   if (!uuid) {
+      showError(CONFIG.errorMessages.noUuid)
+      return
+   }
 
-  if (limit < 1 || limit > CONFIG.maxProxies) {
-    showError(`Proxy count must be between 1 and ${CONFIG.maxProxies}.`);
-    return;
-  }
+   if (limit < 1 || limit > CONFIG.maxProxies) {
+      showError(`${CONFIG.errorMessages.invalidCount}${CONFIG.maxProxies}.`)
+      return
+   }
 
-  // Filter proxies by country if selected
-  filteredProxyList = country
-    ? proxyList.filter((proxy) => proxy.country === country)
-    : [...proxyList];
+   // Filter proxies by country if selected
+   filteredProxyList = country ? proxyList.filter(proxy => proxy.country === country) : [...proxyList]
 
-  // Check if we have enough proxies
-  if (filteredProxyList.length === 0) {
-    showError("No proxies found with the selected criteria.");
-    return;
-  }
+   // Check if we have enough proxies
+   if (filteredProxyList.length === 0) {
+      showError(CONFIG.errorMessages.noProxiesFiltered)
+      return
+   }
 
-  // Shuffle the list to get random proxies
-  shuffleArray(filteredProxyList);
+   // Shuffle the list to get random proxies
+   shuffleArray(filteredProxyList)
 
-  // Limit the number of proxies
-  filteredProxyList = filteredProxyList.slice(0, limit);
+   // Limit the number of proxies
+   filteredProxyList = filteredProxyList.slice(0, limit)
 
-  // Show loading
-  showLoading("Generating configuration...");
+   // Show loading
+   showLoading(CONFIG.loadingMessages.generateConfig)
 
-  // Validate proxies if needed
-  if (validateProxies) {
-    await validateProxyList();
-  }
+   // Validate proxies if needed
+   if (validateProxies) {
+      await validateProxyList()
+   }
 
-  // Generate configuration
-  const config = generateConfiguration(
-    configType,
-    formatType,
-    uuid,
-    bugType,
-    mainDomain,
-    customBug,
-    useTls
-  );
+   // Generate configuration
+   const config = generateConfiguration(configType, formatType, uuid, bugType, mainDomain, customBug, useTls)
 
-  // Show result
-  showResult(config);
+   // Show result
+   showResult(config)
 }
 
 // Validate proxy list
 async function validateProxyList() {
-  validationInProgress = true;
-  validatedProxies = [];
-  totalValidated = 0;
-  validCount = 0;
-  invalidCount = 0;
+   validationInProgress = true
+   validatedProxies = []
+   totalValidated = 0
+   validCount = 0
+   invalidCount = 0
 
-  // Show validation status
-  validationStatusElement.style.display = "block";
-  validationCountElement.textContent = `0/${filteredProxyList.length}`;
-  validationBarElement.style.width = "0%";
-  validCountElement.textContent = "0";
-  invalidCountElement.textContent = "0";
-  invalidCountElement.textContent = "0";
+   // Show validation status
+   validationStatusElement.style.display = 'block'
+   validationCountElement.textContent = `0/${filteredProxyList.length}`
+   validationBarElement.style.width = '0%'
+   validCountElement.textContent = '0'
+   invalidCountElement.textContent = '0'
 
-  // Create a copy of the filtered list
-  const proxiesToValidate = [...filteredProxyList];
+   // Create a copy of the filtered list
+   const proxiesToValidate = [...filteredProxyList]
+   const totalToValidate = proxiesToValidate.length
 
-  // Validate proxies in batches to avoid too many simultaneous requests
-  const batchSize = 5;
-  const batches = Math.ceil(proxiesToValidate.length / batchSize);
+   // Validate proxies in batches to avoid too many simultaneous requests
+   const batches = Math.ceil(totalToValidate / CONFIG.batchSize)
 
-  for (let i = 0; i < batches; i++) {
-    const startIdx = i * batchSize;
-    const endIdx = Math.min(startIdx + batchSize, proxiesToValidate.length);
-    const batch = proxiesToValidate.slice(startIdx, endIdx);
+   for (let i = 0; i < batches; i++) {
+      const startIdx = i * CONFIG.batchSize
+      const endIdx = Math.min(startIdx + CONFIG.batchSize, totalToValidate)
+      const batch = proxiesToValidate.slice(startIdx, endIdx)
 
-    // Validate batch in parallel
-    await Promise.all(
-      batch.map(async (proxy) => {
-        const isValid = await validateProxy(proxy);
-        totalValidated++;
+      // Validate batch in parallel
+      await Promise.all(
+         batch.map(async proxy => {
+            try {
+               const isValid = await validateProxy(proxy)
+               totalValidated++
 
-        // Update validation status
-        const progress = (totalValidated / proxiesToValidate.length) * 100;
-        validationCountElement.textContent = `${totalValidated}/${proxiesToValidate.length}`;
-        validationBarElement.style.width = `${progress}%`;
+               // Update validation status
+               const progress = (totalValidated / totalToValidate) * 100
+               validationCountElement.textContent = `${totalValidated}/${totalToValidate}`
+               validationBarElement.style.width = `${progress}%`
 
-        if (isValid) {
-          validCount++;
-          validCountElement.textContent = validCount;
-          validatedProxies.push(proxy);
-        } else {
-          invalidCount++;
-          invalidCountElement.textContent = invalidCount;
-        }
-      })
-    );
-  }
+               if (isValid) {
+                  validCount++
+                  validatedProxies.push(proxy)
+               } else {
+                  invalidCount++
+               }
+               // Update counts on screen regardless of validity
+               validCountElement.textContent = validCount
+               invalidCountElement.textContent = invalidCount
+            } catch (error) {
+               console.error('Error in batch validation:', error)
+               invalidCount++
+               totalValidated++
+               invalidCountElement.textContent = invalidCount
+               validationCountElement.textContent = `${totalValidated}/${totalToValidate}`
+            }
+         })
+      )
+   }
 
-  // Use validated proxies if we have any, otherwise use the original filtered list
-  if (validatedProxies.length > 0) {
-    filteredProxyList = validatedProxies;
-  }
+   // Use validated proxies if we have any, otherwise use the original filtered list
+   if (validatedProxies.length > 0) {
+      filteredProxyList = validatedProxies
+   }
 
-  validationInProgress = false;
+   validationInProgress = false
 }
 
 // Validate a single proxy
 async function validateProxy(proxy) {
-  try {
-    const response = await fetch(
-      `${CONFIG.apiCheckUrl}${proxy.ip}:${proxy.port}`
-    );
-    const data = await response.json();
+   try {
+      const response = await fetch(`${CONFIG.apiCheckUrl}${proxy.ip}:${proxy.port}`)
+      const data = await response.json()
 
-    // Handle the new format where data is an array
-    const proxyData = Array.isArray(data) ? data[0] : data;
-
-    return proxyData && proxyData.proxyip === true;
-  } catch (error) {
-    console.error("Error validating proxy:", error);
-    return false;
-  }
+      // Handle the new format where data might be an array
+      const proxyData = Array.isArray(data) ? data[0] : data
+      return proxyData && proxyData.proxyip === true
+   } catch (error) {
+      console.error(CONFIG.errorMessages.apiCheck, error)
+      return false // Consider proxy invalid if validation fails
+   }
 }
 
 // Generate configuration
-function generateConfiguration(
-  configType,
-  formatType,
-  uuid,
-  bugType,
-  mainDomain,
-  customBug,
-  useTls
-) {
-  // Determine which proxies to use
-  const proxiesToUse = filteredProxyList;
+function generateConfiguration(configType, formatType, uuid, bugType, mainDomain, customBug, useTls) {
+   // Determine which proxies to use
+   const proxiesToUse = filteredProxyList
 
-  // Generate configuration based on format type
-  switch (formatType) {
-    case "v2ray":
-      return generateV2rayLinks(
-        configType,
-        proxiesToUse,
-        uuid,
-        bugType,
-        mainDomain,
-        customBug,
-        useTls
-      );
-    case "clash":
-      return generateClashConfig(
-        configType,
-        proxiesToUse,
-        uuid,
-        bugType,
-        mainDomain,
-        customBug,
-        useTls
-      );
-    case "nekobox":
-      // For Nekobox, we need to first parse the proxies into a format the new function can use
-      const parsedLinks = [];
+   // Generate configuration based on format type
+   switch (formatType) {
+      case 'v2ray':
+         return generateV2rayLinks(configType, proxiesToUse, uuid, bugType, mainDomain, customBug, useTls)
+      case 'clash':
+         return generateClashConfig(configType, proxiesToUse, uuid, bugType, mainDomain, customBug, useTls)
+      case 'nekobox':
+         const parsedLinks = parseProxiesForNekobox(configType, proxiesToUse, uuid, bugType, mainDomain, customBug, useTls)
+         return generateNekoboxConfig(parsedLinks)
+      default:
+         return 'Unsupported format type'
+   }
+}
 
-      proxiesToUse.forEach((proxy) => {
-        const path = CONFIG.pathTemplate
-          .replace("{ip}", proxy.ip)
-          .replace("{port}", proxy.port);
-        const port = useTls ? 443 : 80;
+// Parse proxies into a format suitable for Nekobox
+function parseProxiesForNekobox(configType, proxies, uuid, bugType, mainDomain, customBug, useTls) {
+   const parsedLinks = []
+   const port = useTls ? 443 : 80
 
-        // Process custom bugs if provided
-        const bugs =
-          customBug && (bugType === "non-wildcard" || bugType === "wildcard")
-            ? customBug.split(",").map((bug) => bug.trim())
-            : [mainDomain];
+   proxies.forEach(proxy => {
+      const path = CONFIG.pathTemplate.replace('{ip}', proxy.ip).replace('{port}', proxy.port)
 
-        bugs.forEach((bug) => {
-          // Determine domain, host, and SNI based on bug type
-          let domain, host, sni;
+      // Process custom bugs if provided
+      const bugs =
+         customBug && (bugType === 'non-wildcard' || bugType === 'wildcard')
+            ? customBug
+                 .split(',')
+                 .map(bug => bug.trim())
+                 .filter(b => b) // Filter out empty strings
+            : [mainDomain]
 
-          switch (bugType) {
-            case "default":
-              domain = mainDomain;
-              host = mainDomain;
-              sni = mainDomain;
-              break;
-            case "non-wildcard":
-              domain = bug;
-              host = mainDomain;
-              sni = mainDomain;
-              break;
-            case "wildcard":
-              domain = bug;
-              host = `${bug}.${mainDomain}`;
-              sni = `${bug}.${mainDomain}`;
-              break;
-          }
+      bugs.forEach(bug => {
+         // Determine domain, host, and SNI based on bug type
+         let domain, host, sni
 
-          const countryCode = proxy.country;
-          const isp = proxy.provider;
+         switch (bugType) {
+            case 'default':
+               domain = mainDomain
+               host = mainDomain
+               sni = mainDomain
+               break
+            case 'non-wildcard':
+               domain = bug
+               host = mainDomain
+               sni = mainDomain
+               break
+            case 'wildcard':
+               domain = bug
+               host = `${bug}.${mainDomain}`
+               sni = `${bug}.${mainDomain}`
+               break
+         }
 
-          if (configType === "vmess" || configType === "mix") {
+         const countryCode = proxy.country
+         const isp = proxy.provider
+
+         if (configType === 'vmess' || configType === 'mix') {
             parsedLinks.push({
-              type: "vmess",
-              name: `[${
-                parsedLinks.length + 1
-              }] (${countryCode}) ${isp} [VMESS-${useTls ? "TLS" : "NTLS"}]`,
-              server: domain,
-              port: port,
-              uuid: uuid,
-              tls: useTls,
-              sni: sni,
-              wsHost: host,
-              wsPath: path,
-            });
-          }
+               type: 'vmess',
+               name: `[${parsedLinks.length + 1}] (${countryCode}) ${isp} [VMESS-${useTls ? 'TLS' : 'NTLS'}]`,
+               server: domain,
+               port: port,
+               uuid: uuid,
+               tls: useTls,
+               sni: sni,
+               wsHost: host,
+               wsPath: path
+            })
+         }
 
-          if (configType === "vless" || configType === "mix") {
+         if (configType === 'vless' || configType === 'mix') {
             parsedLinks.push({
-              type: "vless",
-              name: `[${
-                parsedLinks.length + 1
-              }] (${countryCode}) ${isp} [VLESS-${useTls ? "TLS" : "NTLS"}]`,
-              server: domain,
-              port: port,
-              uuid: uuid,
-              tls: useTls,
-              sni: sni,
-              wsHost: host,
-              wsPath: path,
-            });
-          }
+               type: 'vless',
+               name: `[${parsedLinks.length + 1}] (${countryCode}) ${isp} [VLESS-${useTls ? 'TLS' : 'NTLS'}]`,
+               server: domain,
+               port: port,
+               uuid: uuid,
+               tls: useTls,
+               sni: sni,
+               wsHost: host,
+               wsPath: path
+            })
+         }
 
-          if (configType === "trojan" || configType === "mix") {
+         if (configType === 'trojan' || configType === 'mix') {
             parsedLinks.push({
-              type: "trojan",
-              name: `[${
-                parsedLinks.length + 1
-              }] (${countryCode}) ${isp} [TROJAN-${useTls ? "TLS" : "NTLS"}]`,
-              server: domain,
-              port: port,
-              password: uuid,
-              tls: useTls,
-              sni: sni,
-              wsHost: host,
-              wsPath: path,
-            });
-          }
+               type: 'trojan',
+               name: `[${parsedLinks.length + 1}] (${countryCode}) ${isp} [TROJAN-${useTls ? 'TLS' : 'NTLS'}]`,
+               server: domain,
+               port: port,
+               password: uuid,
+               tls: useTls,
+               sni: sni,
+               wsHost: host,
+               wsPath: path
+            })
+         }
 
-          if (configType === "shadowsocks" || configType === "mix") {
+         if (configType === 'shadowsocks' || configType === 'mix') {
             parsedLinks.push({
-              type: "ss",
-              name: `[${parsedLinks.length + 1}] (${countryCode}) ${isp} [SS-${
-                useTls ? "TLS" : "NTLS"
-              }]`,
-              server: domain,
-              port: port,
-              password: uuid,
-              tls: useTls,
-              wsHost: host,
-              wsPath: path,
-            });
-          }
-        });
-      });
+               type: 'ss',
+               name: `[${parsedLinks.length + 1}] (${countryCode}) ${isp} [SS-${useTls ? 'TLS' : 'NTLS'}]`,
+               server: domain,
+               port: port,
+               password: uuid,
+               tls: useTls,
+               wsHost: host,
+               wsPath: path
+            })
+         }
+      })
+   })
 
-      return generateNekoboxConfig(parsedLinks);
-    default:
-      return "Unsupported format type";
-  }
+   return parsedLinks
 }
 
 // Generate V2Ray links
-function generateV2rayLinks(
-  configType,
-  proxies,
-  uuid,
-  bugType,
-  mainDomain,
-  customBug,
-  useTls
-) {
-  const links = [];
+function generateV2rayLinks(configType, proxies, uuid, bugType, mainDomain, customBug, useTls) {
+   const links = []
+   const port = useTls ? 443 : 80
+   const security = useTls ? 'tls' : 'none'
 
-  // Process custom bugs if provided
-  let bugs = [];
-  if (customBug && (bugType === "non-wildcard" || bugType === "wildcard")) {
-    bugs = customBug.split(",").map((bug) => bug.trim());
-  }
+   // Process custom bugs if provided
+   const bugs =
+      customBug && (bugType === 'non-wildcard' || bugType === 'wildcard')
+         ? customBug
+              .split(',')
+              .map(bug => bug.trim())
+              .filter(b => b) // Filter out empty strings
+         : []
 
-  // Generate links for each proxy
-  proxies.forEach((proxy) => {
-    const path = CONFIG.pathTemplate
-      .replace("{ip}", proxy.ip)
-      .replace("{port}", proxy.port);
-    const port = useTls ? 443 : 80;
-    const security = useTls ? "tls" : "none";
+   proxies.forEach(proxy => {
+      const path = CONFIG.pathTemplate.replace('{ip}', proxy.ip).replace('{port}', proxy.port)
 
-    // Generate links based on config type
-    if (configType === "mix" || configType === "vmess") {
-      // Generate VMess links
-      if (bugs.length > 0) {
-        bugs.forEach((bug, bugIndex) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
+      const generateLink = (server, host, sni, indexOffset = 0) => {
+         const linkIndex = links.length + 1 + indexOffset
+         const name = `[${linkIndex}] ${proxy.country} - ${proxy.provider} [${configType.toUpperCase()}-${useTls ? 'TLS' : 'NTLS'}]`
 
-          const vmessConfig = {
-            v: "2",
-            ps: `[${links.length + 1}] ${proxy.country} - ${
-              proxy.provider
-            } [VMess-${useTls ? "TLS" : "NTLS"}]`,
-            add: server,
-            port: port,
-            id: uuid,
-            aid: "0",
-            net: "ws",
-            type: "none",
-            host: host,
-            path: path,
-            tls: security,
-            sni: sni,
-            scy: "zero",
-          };
+         if (configType === 'mix' || configType === 'vmess') {
+            const vmessConfig = {
+               v: '2',
+               ps: name,
+               add: server,
+               port: port,
+               id: uuid,
+               aid: '0',
+               net: 'ws',
+               type: 'none',
+               host: host,
+               path: path,
+               tls: security,
+               sni: sni,
+               scy: 'zero'
+            }
+            links.push(`vmess://${safeBase64Encode(JSON.stringify(vmessConfig))}`)
+         }
 
-          links.push(
-            `vmess://${safeBase64Encode(JSON.stringify(vmessConfig))}`
-          );
-        });
-      } else {
-        // Direct connection without bug
-        const vmessConfig = {
-          v: "2",
-          ps: `[${links.length + 1}] ${proxy.country} - ${
-            proxy.provider
-          } [VMess-${useTls ? "TLS" : "NTLS"}]`,
-          add: mainDomain,
-          port: port,
-          id: uuid,
-          aid: "0",
-          net: "ws",
-          type: "none",
-          host: mainDomain,
-          path: path,
-          tls: security,
-          sni: mainDomain,
-          scy: "zero",
-        };
+         if (configType === 'mix' || configType === 'vless') {
+            const encodedName = encodeURIComponent(name)
+            const encodedPath = encodeURIComponent(path)
+            links.push(
+               `vless://${uuid}@${server}:${port}?encryption=none&security=${security}&type=ws&host=${host}&path=${encodedPath}&sni=${sni}#${encodedName}`
+            )
+         }
 
-        links.push(`vmess://${safeBase64Encode(JSON.stringify(vmessConfig))}`);
+         if (configType === 'mix' || configType === 'trojan') {
+            const encodedName = encodeURIComponent(name)
+            const encodedPath = encodeURIComponent(path)
+            links.push(`trojan://${uuid}@${server}:${port}?security=${security}&type=ws&host=${host}&path=${encodedPath}&sni=${sni}#${encodedName}`)
+         }
+
+         if (configType === 'mix' || configType === 'shadowsocks') {
+            const encodedName = encodeURIComponent(name)
+            const encodedPath = encodeURIComponent(path)
+            const userInfo = safeBase64Encode(`none:${uuid}`)
+            links.push(
+               `ss://${userInfo}@${server}:${port}?encryption=none&type=ws&host=${host}&path=${encodedPath}&security=${security}&sni=${sni}#${encodedName}`
+            )
+         }
       }
-    }
 
-    if (configType === "mix" || configType === "vless") {
-      // Generate VLESS links
       if (bugs.length > 0) {
-        bugs.forEach((bug) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = encodeURIComponent(
-            `[${links.length + 1}] ${proxy.country} - ${
-              proxy.provider
-            } [VLESS-${useTls ? "TLS" : "NTLS"}]`
-          );
-          const encodedPath = encodeURIComponent(path);
-
-          links.push(
-            `vless://${uuid}@${server}:${port}?encryption=none&security=${security}&type=ws&host=${host}&path=${encodedPath}&sni=${sni}#${name}`
-          );
-        });
+         bugs.forEach((bug, bugIndex) => {
+            const server = bug
+            const host = bugType === 'wildcard' ? `${bug}.${mainDomain}` : mainDomain
+            const sni = bugType === 'wildcard' ? `${bug}.${mainDomain}` : mainDomain
+            generateLink(server, host, sni, bugIndex) // Pass bugIndex to adjust index offset
+         })
       } else {
-        // Direct connection without bug
-        const name = encodeURIComponent(
-          `[${links.length + 1}] ${proxy.country} - ${proxy.provider} [VLESS-${
-            useTls ? "TLS" : "NTLS"
-          }]`
-        );
-        const encodedPath = encodeURIComponent(path);
-
-        links.push(
-          `vless://${uuid}@${mainDomain}:${port}?encryption=none&security=${security}&type=ws&host=${mainDomain}&path=${encodedPath}&sni=${mainDomain}#${name}`
-        );
+         // Direct connection without bug
+         generateLink(mainDomain, mainDomain, mainDomain)
       }
-    }
+   })
 
-    if (configType === "mix" || configType === "trojan") {
-      // Generate Trojan links
-      if (bugs.length > 0) {
-        bugs.forEach((bug) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = encodeURIComponent(
-            `[${links.length + 1}] ${proxy.country} - ${
-              proxy.provider
-            } [Trojan-${useTls ? "TLS" : "NTLS"}]`
-          );
-          const encodedPath = encodeURIComponent(path);
-
-          links.push(
-            `trojan://${uuid}@${server}:${port}?security=${security}&type=ws&host=${host}&path=${encodedPath}&sni=${sni}#${name}`
-          );
-        });
-      } else {
-        // Direct connection without bug
-        const name = encodeURIComponent(
-          `[${links.length + 1}] ${proxy.country} - ${proxy.provider} [Trojan-${
-            useTls ? "TLS" : "NTLS"
-          }]`
-        );
-        const encodedPath = encodeURIComponent(path);
-
-        links.push(
-          `trojan://${uuid}@${mainDomain}:${port}?security=${security}&type=ws&host=${mainDomain}&path=${encodedPath}&sni=${mainDomain}#${name}`
-        );
-      }
-    }
-
-    if (configType === "mix" || configType === "shadowsocks") {
-      // Generate Shadowsocks links
-      if (bugs.length > 0) {
-        bugs.forEach((bug) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = encodeURIComponent(
-            `[${links.length + 1}] ${proxy.country} - ${proxy.provider} [SS-${
-              useTls ? "TLS" : "NTLS"
-            }]`
-          );
-          const encodedPath = encodeURIComponent(path);
-          const method = "none";
-          const userInfo = safeBase64Encode(`${method}:${uuid}`);
-
-          links.push(
-            `ss://${userInfo}@${server}:${port}?encryption=none&type=ws&host=${host}&path=${encodedPath}&security=${security}&sni=${sni}#${name}`
-          );
-        });
-      } else {
-        // Direct connection without bug
-        const name = encodeURIComponent(
-          `[${links.length + 1}] ${proxy.country} - ${proxy.provider} [SS-${
-            useTls ? "TLS" : "NTLS"
-          }]`
-        );
-        const encodedPath = encodeURIComponent(path);
-        const method = "none";
-        const userInfo = safeBase64Encode(`${method}:${uuid}`);
-
-        links.push(
-          `ss://${userInfo}@${mainDomain}:${port}?encryption=none&type=ws&host=${mainDomain}&path=${encodedPath}&security=${security}&sni=${mainDomain}#${name}`
-        );
-      }
-    }
-  });
-
-  return links.join("\n");
+   return links.join('\n')
 }
 
 // Generate Clash configuration
-function generateClashConfig(
-  configType,
-  proxies,
-  uuid,
-  bugType,
-  mainDomain,
-  customBug,
-  useTls
-) {
-  let config = `# Clash Proxy Provider Configuration
+function generateClashConfig(configType, proxies, uuid, bugType, mainDomain, customBug, useTls) {
+   let config = `# Clash Proxy Provider Configuration
 # Generated by Markas-OPM
-# Date: ${new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" })}
+# Date: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}
 # Protocol: ${configType.toUpperCase()}
-# TLS: ${useTls ? "Enabled" : "Disabled"}
+# TLS: ${useTls ? 'Enabled' : 'Disabled'}
 
-proxies:\n`;
+proxies:\n`
 
-  // Process custom bugs if provided
-  let bugs = [];
-  if (customBug && (bugType === "non-wildcard" || bugType === "wildcard")) {
-    bugs = customBug.split(",").map((bug) => bug.trim());
-  }
+   // Process custom bugs if provided
+   const bugs =
+      customBug && (bugType === 'non-wildcard' || bugType === 'wildcard')
+         ? customBug
+              .split(',')
+              .map(bug => bug.trim())
+              .filter(b => b) // Filter out empty strings
+         : []
 
-  // Generate configuration for each proxy
-  proxies.forEach((proxy) => {
-    const path = CONFIG.pathTemplate
-      .replace("{ip}", proxy.ip)
-      .replace("{port}", proxy.port);
-    const port = useTls ? 443 : 80;
-    const tls = useTls;
+   proxies.forEach((proxy, proxyIndex) => {
+      const path = CONFIG.pathTemplate.replace('{ip}', proxy.ip).replace('{port}', proxy.port)
 
-    // Generate configuration based on config type
-    if (configType === "mix" || configType === "vmess") {
-      // Generate VMess configuration
-      if (bugs.length > 0) {
-        bugs.forEach((bug, bugIndex) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = `[${
-            proxies.indexOf(proxy) * bugs.length + bugIndex + 1
-          }] ${proxy.country} - ${proxy.provider} [VMess-${
-            useTls ? "TLS" : "NTLS"
-          }]`;
+      const generateConfigBlock = (server, host, sni, nameSuffix = '') => {
+         const name = `[${proxyIndex + 1}${nameSuffix}] ${proxy.country} - ${proxy.provider} [${configType.toUpperCase()}-${useTls ? 'TLS' : 'NTLS'}]`
 
-          config += `
+         if (configType === 'mix' || configType === 'vmess') {
+            config += `
   - name: "${name}"
     type: vmess
     server: ${server}
-    port: ${port}
+    port: ${useTls ? 443 : 80}
     uuid: ${uuid}
     alterId: 0
     cipher: zero
     udp: false
-    tls: ${tls}
+    tls: ${useTls}
     skip-cert-verify: true
     servername: ${sni}
     network: ws
@@ -783,58 +640,18 @@ proxies:\n`;
       path: ${path}
       headers:
         Host: ${host}
-`;
-        });
-      } else {
-        // Direct connection without bug
-        const name = `[${proxies.indexOf(proxy) + 1}] ${proxy.country} - ${
-          proxy.provider
-        } [VMess-${useTls ? "TLS" : "NTLS"}]`;
+`
+         }
 
-        config += `
-  - name: "${name}"
-    type: vmess
-    server: ${mainDomain}
-    port: ${port}
-    uuid: ${uuid}
-    alterId: 0
-    cipher: zero
-    udp: false
-    tls: ${tls}
-    skip-cert-verify: true
-    servername: ${mainDomain}
-    network: ws
-    ws-opts:
-      path: ${path}
-      headers:
-        Host: ${mainDomain}
-`;
-      }
-    }
-
-    if (configType === "mix" || configType === "vless") {
-      // Generate VLESS configuration
-      if (bugs.length > 0) {
-        bugs.forEach((bug, bugIndex) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = `[${
-            proxies.indexOf(proxy) * bugs.length + bugIndex + 1
-          }] ${proxy.country} - ${proxy.provider} [VLESS-${
-            useTls ? "TLS" : "NTLS"
-          }]`;
-
-          config += `
+         if (configType === 'mix' || configType === 'vless') {
+            config += `
   - name: "${name}"
     type: vless
     server: ${server}
-    port: ${port}
+    port: ${useTls ? 443 : 80}
     uuid: ${uuid}
     udp: false
-    tls: ${tls}
+    tls: ${useTls}
     skip-cert-verify: true
     servername: ${sni}
     network: ws
@@ -842,53 +659,15 @@ proxies:\n`;
       path: ${path}
       headers:
         Host: ${host}
-`;
-        });
-      } else {
-        // Direct connection without bug
-        const name = `[${proxies.indexOf(proxy) + 1}] ${proxy.country} - ${
-          proxy.provider
-        } [VLESS-${useTls ? "TLS" : "NTLS"}]`;
+`
+         }
 
-        config += `
-  - name: "${name}"
-    type: vless
-    server: ${mainDomain}
-    port: ${port}
-    uuid: ${uuid}
-    udp: false
-    tls: ${tls}
-    skip-cert-verify: true
-    servername: ${mainDomain}
-    network: ws
-    ws-opts:
-      path: ${path}
-      headers:
-        Host: ${mainDomain}
-`;
-      }
-    }
-
-    if (configType === "mix" || configType === "trojan") {
-      // Generate Trojan configuration
-      if (bugs.length > 0) {
-        bugs.forEach((bug, bugIndex) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = `[${
-            proxies.indexOf(proxy) * bugs.length + bugIndex + 1
-          }] ${proxy.country} - ${proxy.provider} [Trojan-${
-            useTls ? "TLS" : "NTLS"
-          }]`;
-
-          config += `
+         if (configType === 'mix' || configType === 'trojan') {
+            config += `
   - name: "${name}"
     type: trojan
     server: ${server}
-    port: ${port}
+    port: ${useTls ? 443 : 80}
     password: ${uuid}
     udp: false
     sni: ${sni}
@@ -898,97 +677,49 @@ proxies:\n`;
       path: ${path}
       headers:
         Host: ${host}
-`;
-        });
-      } else {
-        // Direct connection without bug
-        const name = `[${proxies.indexOf(proxy) + 1}] ${proxy.country} - ${
-          proxy.provider
-        } [Trojan-${useTls ? "TLS" : "NTLS"}]`;
+`
+         }
 
-        config += `
-  - name: "${name}"
-    type: trojan
-    server: ${mainDomain}
-    port: ${port}
-    password: ${uuid}
-    udp: false
-    sni: ${mainDomain}
-    skip-cert-verify: true
-    network: ws
-    ws-opts:
-      path: ${path}
-      headers:
-        Host: ${mainDomain}
-`;
-      }
-    }
-
-    if (configType === "mix" || configType === "shadowsocks") {
-      // Generate Shadowsocks configuration
-      if (bugs.length > 0) {
-        bugs.forEach((bug, bugIndex) => {
-          const server = bug;
-          const host =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const sni =
-            bugType === "wildcard" ? `${bug}.${mainDomain}` : mainDomain;
-          const name = `[${
-            proxies.indexOf(proxy) * bugs.length + bugIndex + 1
-          }] ${proxy.country} - ${proxy.provider} [SS-${
-            useTls ? "TLS" : "NTLS"
-          }]`;
-
-          config += `
+         if (configType === 'mix' || configType === 'shadowsocks') {
+            config += `
   - name: "${name}"
     type: ss
     server: ${server}
-    port: ${port}
+    port: ${useTls ? 443 : 80}
     cipher: none
     password: ${uuid}
     udp: false
     plugin: v2ray-plugin
     plugin-opts:
       mode: websocket
-      tls: ${tls}
+      tls: ${useTls}
       skip-cert-verify: true
       host: ${host}
       path: ${path}
       mux: false
-`;
-        });
-      } else {
-        // Direct connection without bug
-        const name = `[${proxies.indexOf(proxy) + 1}] ${proxy.country} - ${
-          proxy.provider
-        } [SS-${useTls ? "TLS" : "NTLS"}]`;
-
-        config += `
-  - name: "${name}"
-    type: ss
-    server: ${mainDomain}
-    port: ${port}
-    cipher: none
-    password: ${uuid}
-    udp: false
-    plugin: v2ray-plugin
-    plugin-opts:
-      mode: websocket
-      tls: ${tls}
-      skip-cert-verify: true
-      host: ${mainDomain}
-      path: ${path}
-      mux: false
-`;
+`
+         }
       }
-    }
-  });
 
-  return config;
+      if (bugs.length > 0) {
+         bugs.forEach((bug, bugIndex) => {
+            const server = bug
+            const host = bugType === 'wildcard' ? `${bug}.${mainDomain}` : mainDomain
+            const sni = bugType === 'wildcard' ? `${bug}.${mainDomain}` : mainDomain
+            generateConfigBlock(server, host, sni, `-${bugIndex + 1}`)
+         })
+      } else {
+         // Direct connection without bug
+         generateConfigBlock(mainDomain, mainDomain, mainDomain)
+      }
+   })
+
+   return config
 }
 
+// Generate Nekobox configuration
 function generateNekoboxConfig(parsedLinks) {
-  let config = `##MARKASOPM##
+   let config = `##MARKASOPM##
 {
   "dns": {
     "final": "dns-final",
@@ -1037,7 +768,7 @@ function generateNekoboxConfig(parsedLinks) {
       "store_fakeip": true
     },
     "clash_api": {
-      "external_controller": "127.0.0.1:9090",
+      "external_controller": "127.0.0.0:9090",
       "external_ui": "../files/yacd"
     }
   },
@@ -1052,11 +783,6 @@ function generateNekoboxConfig(parsedLinks) {
     },
     {
       "domain_strategy": "",
-      "endpoint_independent_nat": true,
-      "inet4_address": [
-        "172.19.0.1/28"
-      ],
-      "mtu": 9000,
       "endpoint_independent_nat": true,
       "inet4_address": [
         "172.19.0.1/28"
@@ -1085,14 +811,12 @@ function generateNekoboxConfig(parsedLinks) {
     {
       "outbounds": [
         "Best Latency",
-`;
+`
 
-  // Add proxy tags
-  const proxyTags = parsedLinks
-    .map((proxy) => `        "${proxy.name}",`)
-    .join("\n");
-  config += proxyTags + "\n";
-  config += `        "direct"
+   // Add proxy tags to the main selector
+   const proxyTags = parsedLinks.map(proxy => `        "${proxy.name}",`).join('\n')
+   config += proxyTags + '\n'
+   config += `        "direct"
       ],
       "tag": "Internet",
       "type": "selector"
@@ -1100,31 +824,31 @@ function generateNekoboxConfig(parsedLinks) {
     {
       "interval": "1m0s",
       "outbounds": [
-`;
-  // Add proxy tags again for Best Latency
-  config += proxyTags + "\n";
-  config += `        "direct"
+`
+   // Add proxy tags to the URLTest (Best Latency)
+   config += proxyTags + '\n'
+   config += `        "direct"
       ],
       "tag": "Best Latency",
       "type": "urltest",
       "url": "https://detectportal.firefox.com/success.txt"
     },
-`;
+`
 
-  // Add all proxy configurations
-  const proxyConfigs = parsedLinks
-    .map((proxy, index) => {
-      let proxyConfig = "";
+   // Add all proxy configurations
+   const proxyConfigs = parsedLinks
+      .map(proxy => {
+         let proxyConfig = ''
 
-      if (proxy.type === "vmess") {
-        proxyConfig = `    {
+         if (proxy.type === 'vmess') {
+            proxyConfig = `    {
       "alter_id": 0,
       "packet_encoding": "",
       "security": "zero",
       "server": "${proxy.server}",
       "server_port": ${proxy.port},${
-          proxy.tls
-            ? `
+               proxy.tls
+                  ? `
       "tls": {
         "enabled": true,
         "insecure": false,
@@ -1134,8 +858,8 @@ function generateNekoboxConfig(parsedLinks) {
           "fingerprint": "randomized"
         }
       },`
-            : ""
-        }
+                  : ''
+            }
       "transport": {
         "headers": {
           "Host": "${proxy.wsHost || proxy.server}"
@@ -1147,9 +871,9 @@ function generateNekoboxConfig(parsedLinks) {
       "type": "vmess",
       "domain_strategy": "prefer_ipv4",
       "tag": "${proxy.name}"
-    }`;
-      } else if (proxy.type === "vless") {
-        proxyConfig = `    {
+    }`
+         } else if (proxy.type === 'vless') {
+            proxyConfig = `    {
       "domain_strategy": "ipv4_only",
       "flow": "",
       "multiplex": {
@@ -1161,8 +885,8 @@ function generateNekoboxConfig(parsedLinks) {
       "server": "${proxy.server}",
       "server_port": ${proxy.port},
       "tag": "${proxy.name}",${
-          proxy.tls
-            ? `
+               proxy.tls
+                  ? `
       "tls": {
         "enabled": true,
         "insecure": false,
@@ -1172,8 +896,8 @@ function generateNekoboxConfig(parsedLinks) {
           "fingerprint": "randomized"
         }
       },`
-            : ""
-        }
+                  : ''
+            }
       "transport": {
         "early_data_header_name": "Sec-WebSocket-Protocol",
         "headers": {
@@ -1185,9 +909,9 @@ function generateNekoboxConfig(parsedLinks) {
       },
       "type": "vless",
       "uuid": "${proxy.uuid}"
-    }`;
-      } else if (proxy.type === "trojan") {
-        proxyConfig = `    {
+    }`
+         } else if (proxy.type === 'trojan') {
+            proxyConfig = `    {
       "domain_strategy": "ipv4_only",
       "multiplex": {
         "enabled": false,
@@ -1198,8 +922,8 @@ function generateNekoboxConfig(parsedLinks) {
       "server": "${proxy.server}",
       "server_port": ${proxy.port},
       "tag": "${proxy.name}",${
-          proxy.tls
-            ? `
+               proxy.tls
+                  ? `
       "tls": {
         "enabled": true,
         "insecure": false,
@@ -1209,8 +933,8 @@ function generateNekoboxConfig(parsedLinks) {
           "fingerprint": "randomized"
         }
       },`
-            : ""
-        }
+                  : ''
+            }
       "transport": {
         "early_data_header_name": "Sec-WebSocket-Protocol",
         "headers": {
@@ -1221,9 +945,9 @@ function generateNekoboxConfig(parsedLinks) {
         "type": "ws"
       },
       "type": "trojan"
-    }`;
-      } else if (proxy.type === "ss") {
-        proxyConfig = `    {
+    }`
+         } else if (proxy.type === 'ss') {
+            proxyConfig = `    {
       "type": "shadowsocks",
       "tag": "${proxy.name}",
       "server": "${proxy.server}",
@@ -1231,20 +955,18 @@ function generateNekoboxConfig(parsedLinks) {
       "method": "none",
       "password": "${proxy.password}",
       "plugin": "v2ray-plugin",
-      "plugin_opts": "mux=0;path=${proxy.wsPath};host=${
-          proxy.wsHost || proxy.server
-        };tls=${proxy.tls ? "1" : "0"}"
-    }`;
-      }
+      "plugin_opts": "mux=0;path=${proxy.wsPath};host=${proxy.wsHost || proxy.server};tls=${proxy.tls ? '1' : '0'}"
+    }`
+         }
 
-      return proxyConfig;
-    })
-    .join(",\n");
+         return proxyConfig
+      })
+      .join(',\n')
 
-  config += proxyConfigs;
+   config += proxyConfigs
 
-  // Add the remaining outbounds
-  config += `,
+   // Add the remaining outbounds
+   config += `,
     {
       "tag": "direct",
       "type": "direct"
@@ -1300,54 +1022,48 @@ function generateNekoboxConfig(parsedLinks) {
       }
     ]
   }
-}`;
+}`
 
-  return config;
+   return config
 }
 
 // Show loading message
 function showLoading(message) {
-  const loadingText = document.getElementById("loading-text");
-
-  loadingElement.style.display = "block";
-  if (loadingText) loadingText.textContent = message;
-
-  resultElement.style.display = "none";
-  validationStatusElement.style.display = "none";
+   loadingElement.style.display = 'block'
+   if (loadingTextElement) loadingTextElement.textContent = message
+   resultElement.style.display = 'none'
+   validationStatusElement.style.display = 'none'
 }
 
 // Hide loading message
 function hideLoading() {
-  loadingElement.style.display = "none";
+   loadingElement.style.display = 'none'
 }
 
 // Show error message
 function showError(message) {
-  errorMessageElement.textContent = message;
-  errorMessageElement.style.display = "block";
+   errorMessageElement.textContent = message
+   errorMessageElement.style.display = 'block'
+}
+
+// Hide error message
+function hideError() {
+   errorMessageElement.textContent = ''
+   errorMessageElement.style.display = 'none'
 }
 
 // Show result
 function showResult(config) {
-  // Hide loading and validation status
-  hideLoading();
-  validationStatusElement.style.display = "none";
+   // Hide loading and validation status
+   hideLoading()
+   validationStatusElement.style.display = 'none'
 
-  // Set output text
-  outputElement.value = config;
+   // Set output text
+   outputElement.value = config
 
-  // Show result section
-  resultElement.style.display = "block";
+   // Show result section
+   resultElement.style.display = 'block'
 
-  // Scroll to result
-  resultElement.scrollIntoView({ behavior: "smooth" });
-}
-
-// Utility function to shuffle an array
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+   // Scroll to result
+   resultElement.scrollIntoView({ behavior: 'smooth' })
 }

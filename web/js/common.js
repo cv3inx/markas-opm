@@ -6,46 +6,55 @@
 // ============================================
 // DOM Content Loaded - Initialize Components
 // ============================================
-document.addEventListener("DOMContentLoaded", () => {
-  initializeComponents();
-  initializeDonationModal();
-  setCurrentYear();
-});
+document.addEventListener('DOMContentLoaded', () => {
+   initializeComponents()
+   initializeDonationModal()
+   setCurrentYear()
+})
 
 /**
  * Initialize reusable components (nav, footer, floating)
  */
-function initializeComponents() {
-  const nav = document.getElementById("navSec");
-  const footer = document.getElementById("footer");
-  const floating = document.getElementById("floating");
-  const currentPath = window.location.pathname;
-
-  // Navigation Component
-if (nav) {
-    nav.innerHTML = `
-      <nav role="tablist" class="tabs tabs-bordered items-center gap-2"> <a role="tab" href="/" class="tab text-lg ${currentPath === '/' ? 'tab-active' : ''} hover:scale-101 hover:shadow-lg hover:shadow-neutral-500/50 transition-all duration-500 ease-in-out">
-          Home
-        </a>
-        <a role="tab" href="/sub" class="tab text-lg ${currentPath === '/sub' ? 'tab-active' : ''} hover:scale-101 hover:shadow-lg hover:shadow-neutral-500/50 transition-all duration-500 ease-in-out">
-          Subscription
-        </a>
-        <a role="tab" href="/link" class="tab text-lg ${currentPath === '/link' ? 'tab-active' : ''} hover:scale-101 hover:shadow-lg hover:shadow-neutral-500/50 transition-all duration-500 ease-in-out">
+async function initializeComponents() {
+   const nav = document.getElementById('navSec')
+   const footer = document.getElementById('footer')
+   const floating = document.getElementById('floating')
+   const currentPath = window.location.pathname
+   // Navigation Component
+   if (nav) {
+      nav.innerHTML = `
+   <nav role="tablist" class="tabs tabs-bordered items-center justify-center gap-2">
+      <a role="tab" href="/link" class="tab text-lg font-medium transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg hover:shadow-neutral-500/30 ${
+         currentPath === '/link' ? 'tab-active' : ''
+      }">
           Generate
         </a>
+
+        <a role="tab" href="/sub" class="tab text-lg font-medium transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg hover:shadow-neutral-500/30 ${
+           currentPath === '/sub' ? 'tab-active' : ''
+        }">
+          Subscription
+        </a>
+
+        <a role="tab" href="/converter" class="tab text-lg font-medium transition-all duration-300 ease-out hover:scale-105 hover:shadow-lg hover:shadow-neutral-500/30 ${
+           currentPath === '/converter' ? 'tab-active' : ''
+        }">
+          Converter
+        </a>
       </nav>
-    `;
-  }
-  // Floating Donation Button & Modal
-  if (floating) {
-    floating.innerHTML = `
-      <button 
+    `
+   }
+
+   // Floating Donation Button & Modal
+   if (floating) {
+      floating.innerHTML = `
+      <button
         id="donation-button"
-        class="btn btn-circle btn-primary fixed bottom-4 right-4 shadow-2xl animate-pulse hover:animate-none z-50 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 transition-all duration-200 ease-in-out"
+        class="btn btn-circle btn-neutral fixed bottom-4 right-4 shadow-2xl animate-pulse hover:animate-none z-50 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 transition-all duration-200 ease-in-out"
         aria-label="Support us">
         <i class="fas fa-hand-holding-heart text-xl"></i>
       </button>
-   
+
       <dialog id="donation_modal" class="modal">
         <div class="modal-box glass-pane text-center">
           <h3 class="font-bold text-2xl font-orbitron mb-2 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
@@ -55,7 +64,7 @@ if (nav) {
             Your donation keeps our services running. Thank you! 🙏
           </p>
           <div class="bg-white p-4 rounded-xl inline-block shadow-lg">
-            <img 
+            <img
               src="https://x.fairy.my.id/f/POzuPGfJ42ir.png  "
               alt="Donation QR Code"
               class="w-full max-w-xs mx-auto"
@@ -63,7 +72,7 @@ if (nav) {
           </div>
           <div class="modal-action flex flex-col gap-2"> <!-- Menambahkan flex-col dan gap untuk jarak antar tombol dalam modal action -->
             <form method="dialog">
-              <button class="btn btn-outline btn-wide">Close</button>
+              <button class="btn btn-secondary btn-wide">Close</button>
             </form>
           </div>
         </div>
@@ -71,63 +80,91 @@ if (nav) {
           <button aria-label="Close modal">close</button>
         </form>
       </dialog>
-    `;
-  }
+    `
+   }
 
-  // Footer Component
-  if (footer) {
-    const currentYear = new Date().getFullYear();
-    footer.innerHTML = `
-      <footer class="text-center p-4 mt-4 text-sm text-white/50">
-        <p>
-          © <span id="current-year">${currentYear}</span> MARKAS OPM PROJECT — 
-          <a 
-            href="https://t.me/shouwee  " 
-            class="link link-hover text-purple-400  transition-colors hover:scale-105 hover:underline transition-all duration-200 ease-in-out" 
-            target="_blank"
-            rel="noopener noreferrer">
-            Contact Admin
-          </a>
-        </p>
-      </footer>
-    `;
-  }
+   // Footer Component
+   if (footer) {
+      const currentYear = new Date().getFullYear()
+      let userIP = 'Loading...'
+      let userLocation = ''
+
+      try {
+         const response = await fetch('https://ipinfo.io/json', {
+            credentials: 'omit',
+            headers: {
+               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0',
+               Accept: '*/*',
+               'Accept-Language': 'en-US,en;q=0.5',
+               'Sec-GPC': '1',
+               'Sec-Fetch-Dest': 'empty',
+               'Sec-Fetch-Mode': 'cors',
+               'Sec-Fetch-Site': 'cross-site',
+               Priority: 'u=0'
+            },
+            method: 'GET',
+            mode: 'cors'
+         })
+
+         if (response.ok) {
+            const data = await response.json()
+            userIP = data.ip || 'Unknown'
+            userLocation = data.city && data.country ? `${data.city}, ${data.country}` : ''
+            console.log('IP Info:', data)
+         }
+      } catch (error) {
+         console.error('Failed to fetch IP:', error)
+         userIP = 'Unable to fetch'
+      }
+
+      footer.innerHTML = `
+   <footer class="text-center p-4 mt-4 text-sm text-white/50">
+     <p class="mb-2">
+       <span class="text-white/70">Your IP:</span> <span class="font-mono  text-purple-400">${userIP}</span>
+       ${userLocation ? `<span class="ml-2 text-white/60">(${userLocation})</span>` : ''}
+     </p>
+     <p>
+       © <span id="current-year">${currentYear}</span> MARKAS OPM PROJECT
+     </p>
+   </footer>
+   `
+   }
 }
 
 /**
  * Initialize donation modal functionality (DaisyUI modal)
  */
 function initializeDonationModal() {
-  // Wait a bit for DOM to fully render
-  setTimeout(() => {
-    const donationButton = document.getElementById("donation-button");
-    const donationModal = document.getElementById("donation_modal");
+   // Wait a bit for DOM to fully render
+   setTimeout(() => {
+      const donationButton = document.getElementById('donation-button')
+      const donationModal = document.getElementById('donation_modal')
 
-    if (donationButton && donationModal) {
-      donationButton.addEventListener("click", () => {
-        donationModal.showModal();
-      });
+      if (donationButton && donationModal) {
+         donationButton.addEventListener('click', () => {
+            donationModal.showModal()
+         })
 
-      // Close with Escape key (DaisyUI handles this by default)
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && donationModal.open) {
-          donationModal.close();
-        }
-      });
-    }
-  }, 100);
+         // Close with Escape key (DaisyUI handles this by default)
+         document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && donationModal.open) {
+               donationModal.close()
+            }
+         })
+      }
+   }, 100)
 }
 
 /**
  * Set current year in footer and other elements
  */
 function setCurrentYear() {
-  const currentYear = new Date().getFullYear();
-  const yearElements = document.querySelectorAll("#current-year, .current-year");
-  
-  yearElements.forEach((element) => {
-    element.textContent = currentYear;
-  });
+   const currentYear = new Date().getFullYear()
+   const yearElements = document.querySelectorAll('#current-year, .current-year')
+
+   yearElements.forEach(element => {
+      element.textContent = currentYear
+   })
 }
 
 // ============================================
@@ -139,11 +176,11 @@ function setCurrentYear() {
  * @returns {string} A random UUID v4
  */
 function generateUUIDv4() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+   })
 }
 
 /**
@@ -151,19 +188,19 @@ function generateUUIDv4() {
  * @param {string} elementId - ID of the input element to update
  */
 function generateUUID(elementId) {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    console.error(`Element with ID "${elementId}" not found`);
-    return;
-  }
+   const element = document.getElementById(elementId)
+   if (!element) {
+      console.error(`Element with ID "${elementId}" not found`)
+      return
+   }
 
-  const uuid = generateUUIDv4();
-  element.value = uuid;
+   const uuid = generateUUIDv4()
+   element.value = uuid
 
-  // Visual feedback
-  addSuccessFeedback(element);
-  
-  return uuid;
+   // Visual feedback
+   addSuccessFeedback(element)
+
+   return uuid
 }
 
 /**
@@ -171,19 +208,19 @@ function generateUUID(elementId) {
  * @param {string} elementId - ID of the input element to update
  */
 function generatePassword(elementId) {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    console.error(`Element with ID "${elementId}" not found`);
-    return;
-  }
+   const element = document.getElementById(elementId)
+   if (!element) {
+      console.error(`Element with ID "${elementId}" not found`)
+      return
+   }
 
-  const password = generateUUIDv4();
-  element.value = password;
+   const password = generateUUIDv4()
+   element.value = password
 
-  // Visual feedback
-  addSuccessFeedback(element);
-  
-  return password;
+   // Visual feedback
+   addSuccessFeedback(element)
+
+   return password
 }
 
 /**
@@ -191,10 +228,10 @@ function generatePassword(elementId) {
  * @param {HTMLElement} element - The input element
  */
 function addSuccessFeedback(element) {
-  element.classList.add("input-success");
-  setTimeout(() => {
-    element.classList.remove("input-success");
-  }, 600);
+   element.classList.add('input-success')
+   setTimeout(() => {
+      element.classList.remove('input-success')
+   }, 600)
 }
 
 // ============================================
@@ -207,13 +244,13 @@ function addSuccessFeedback(element) {
  * @returns {string} Base64 encoded string
  */
 function safeBase64Encode(str) {
-  try {
-    const stringToEncode = typeof str === "object" ? JSON.stringify(str) : String(str);
-    return window.btoa(unescape(encodeURIComponent(stringToEncode)));
-  } catch (e) {
-    console.error("Base64 encoding error:", e);
-    return "";
-  }
+   try {
+      const stringToEncode = typeof str === 'object' ? JSON.stringify(str) : String(str)
+      return window.btoa(unescape(encodeURIComponent(stringToEncode)))
+   } catch (e) {
+      console.error('Base64 encoding error:', e)
+      return ''
+   }
 }
 
 /**
@@ -222,12 +259,12 @@ function safeBase64Encode(str) {
  * @returns {string} Decoded string
  */
 function safeBase64Decode(str) {
-  try {
-    return decodeURIComponent(escape(window.atob(str)));
-  } catch (e) {
-    console.error("Base64 decoding error:", e);
-    return "";
-  }
+   try {
+      return decodeURIComponent(escape(window.atob(str)))
+   } catch (e) {
+      console.error('Base64 decoding error:', e)
+      return ''
+   }
 }
 
 /**
@@ -236,14 +273,14 @@ function safeBase64Decode(str) {
  * @returns {string} Formatted date string
  */
 function formatDate(date) {
-  const options = {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  };
-  return date.toLocaleDateString("en-US", options);
+   const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+   }
+   return date.toLocaleDateString('en-US', options)
 }
 
 /**
@@ -252,29 +289,29 @@ function formatDate(date) {
  * @returns {Promise<boolean>} Success status
  */
 async function copyToClipboard(text) {
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } else {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      
-      const success = document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return success;
-    }
-  } catch (err) {
-    console.error("Failed to copy text:", err);
-    return false;
-  }
+   try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+         await navigator.clipboard.writeText(text)
+         return true
+      } else {
+         // Fallback for older browsers
+         const textArea = document.createElement('textarea')
+         textArea.value = text
+         textArea.style.position = 'fixed'
+         textArea.style.left = '-999999px'
+         textArea.style.top = '-999999px'
+         document.body.appendChild(textArea)
+         textArea.focus()
+         textArea.select()
+
+         const success = document.execCommand('copy')
+         document.body.removeChild(textArea)
+         return success
+      }
+   } catch (err) {
+      console.error('Failed to copy text:', err)
+      return false
+   }
 }
 
 /**
@@ -284,15 +321,15 @@ async function copyToClipboard(text) {
  * @returns {Function} Debounced function
  */
 function debounce(func, wait = 300) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+   let timeout
+   return function executedFunction(...args) {
+      const later = () => {
+         clearTimeout(timeout)
+         func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+   }
 }
 
 // ============================================
@@ -305,14 +342,14 @@ function debounce(func, wait = 300) {
  * @param {string} type - Type of toast (success, error, info, warning)
  * @param {number} duration - Duration in milliseconds (default: 3000)
  */
-function showToast(message, type = "info", duration = 3000) {
-  // Ensure toast container exists
-  let toastContainer = document.getElementById("toast-container");
+function showToast(message, type = 'info', duration = 3000) {
+   // Ensure toast container exists
+   let toastContainer = document.getElementById('toast-container')
 
-  if (!toastContainer) {
-    toastContainer = document.createElement("div");
-    toastContainer.id = "toast-container";
-    toastContainer.style.cssText = `
+   if (!toastContainer) {
+      toastContainer = document.createElement('div')
+      toastContainer.id = 'toast-container'
+      toastContainer.style.cssText = `
       position: fixed;
       top: 20px;
       right: 20px;
@@ -321,13 +358,13 @@ function showToast(message, type = "info", duration = 3000) {
       flex-direction: column;
       gap: 10px;
       pointer-events: none;
-    `;
-    document.body.appendChild(toastContainer);
-  }
+    `
+      document.body.appendChild(toastContainer)
+   }
 
-  // Create toast element
-  const toast = document.createElement("div");
-  toast.style.cssText = `
+   // Create toast element
+   const toast = document.createElement('div')
+   toast.style.cssText = `
     min-width: 250px;
     max-width: 400px;
     padding: 16px 20px;
@@ -339,47 +376,47 @@ function showToast(message, type = "info", duration = 3000) {
     color: white;
     font-size: 14px;
     font-weight: 500;
-    animation: slideInRight 0.3s ease-out, slideOutRight 0.3s ease-in ${(duration / 1000) - 0.3}s forwards;
+    animation: slideInRight 0.3s ease-out, slideOutRight 0.3s ease-in ${duration / 1000 - 0.3}s forwards;
     pointer-events: auto;
     backdrop-filter: blur(10px);
-  `;
+  `
 
-  // Set background color and icon based on type
-  const config = {
-    success: { bg: "rgba(16, 185, 129, 0.95)", icon: "fa-check-circle" },
-    error: { bg: "rgba(239, 68, 68, 0.95)", icon: "fa-exclamation-circle" },
-    warning: { bg: "rgba(245, 158, 11, 0.95)", icon: "fa-exclamation-triangle" },
-    info: { bg: "rgba(99, 102, 241, 0.95)", icon: "fa-info-circle" },
-  };
+   // Set background color and icon based on type
+   const config = {
+      success: { bg: 'rgba(16, 185, 129, 0.95)', icon: 'fa-check-circle' },
+      error: { bg: 'rgba(239, 68, 68, 0.95)', icon: 'fa-exclamation-circle' },
+      warning: { bg: 'rgba(245, 158, 11, 0.95)', icon: 'fa-exclamation-triangle' },
+      info: { bg: 'rgba(99, 102, 241, 0.95)', icon: 'fa-info-circle' }
+   }
 
-  const { bg, icon } = config[type] || config.info;
-  toast.style.backgroundColor = bg;
+   const { bg, icon } = config[type] || config.info
+   toast.style.backgroundColor = bg
 
-  // Toast content
-  toast.innerHTML = `
+   // Toast content
+   toast.innerHTML = `
     <i class="fas ${icon}" style="font-size: 20px; flex-shrink: 0;"></i>
     <span style="flex: 1;">${message}</span>
-    <button 
+    <button
       style="background: none; border: none; color: white; cursor: pointer; font-size: 18px; padding: 0; flex-shrink: 0;"
       aria-label="Close notification">
       <i class="fas fa-times"></i>
     </button>
-  `;
+  `
 
-  // Close button functionality
-  const closeButton = toast.querySelector("button");
-  closeButton.addEventListener("click", () => {
-    removeToast(toast, toastContainer);
-  });
+   // Close button functionality
+   const closeButton = toast.querySelector('button')
+   closeButton.addEventListener('click', () => {
+      removeToast(toast, toastContainer)
+   })
 
-  // Add to container
-  toastContainer.appendChild(toast);
+   // Add to container
+   toastContainer.appendChild(toast)
 
-  // Inject animation CSS if not exists
-  if (!document.getElementById("toast-animation-styles")) {
-    const style = document.createElement("style");
-    style.id = "toast-animation-styles";
-    style.textContent = `
+   // Inject animation CSS if not exists
+   if (!document.getElementById('toast-animation-styles')) {
+      const style = document.createElement('style')
+      style.id = 'toast-animation-styles'
+      style.textContent = `
       @keyframes slideInRight {
         from {
           opacity: 0;
@@ -405,14 +442,14 @@ function showToast(message, type = "info", duration = 3000) {
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
         transition: all 0.3s ease !important;
       }
-    `;
-    document.head.appendChild(style);
-  }
+    `
+      document.head.appendChild(style)
+   }
 
-  // Auto remove after duration
-  setTimeout(() => {
-    removeToast(toast, toastContainer);
-  }, duration);
+   // Auto remove after duration
+   setTimeout(() => {
+      removeToast(toast, toastContainer)
+   }, duration)
 }
 
 /**
@@ -421,18 +458,18 @@ function showToast(message, type = "info", duration = 3000) {
  * @param {HTMLElement} container - Toast container
  */
 function removeToast(toast, container) {
-  if (container.contains(toast)) {
-    toast.style.animation = "slideOutRight 0.3s ease-in forwards";
-    setTimeout(() => {
-      if (container.contains(toast)) {
-        container.removeChild(toast);
-      }
-      // Remove container if empty
-      if (container.children.length === 0) {
-        container.remove();
-      }
-    }, 300);
-  }
+   if (container.contains(toast)) {
+      toast.style.animation = 'slideOutRight 0.3s ease-in forwards'
+      setTimeout(() => {
+         if (container.contains(toast)) {
+            container.removeChild(toast)
+         }
+         // Remove container if empty
+         if (container.children.length === 0) {
+            container.remove()
+         }
+      }, 300)
+   }
 }
 
 // ============================================
@@ -444,10 +481,10 @@ function removeToast(toast, container) {
  * @param {HTMLElement} element - Element to show spinner on
  */
 function showLoading(element) {
-  if (!element) return;
-  
-  element.classList.add("loading", "loading-spinner");
-  element.disabled = true;
+   if (!element) return
+
+   element.classList.add('loading', 'loading-spinner')
+   element.disabled = true
 }
 
 /**
@@ -455,27 +492,27 @@ function showLoading(element) {
  * @param {HTMLElement} element - Element to hide spinner from
  */
 function hideLoading(element) {
-  if (!element) return;
-  
-  element.classList.remove("loading", "loading-spinner");
-  element.disabled = false;
+   if (!element) return
+
+   element.classList.remove('loading', 'loading-spinner')
+   element.disabled = false
 }
 
 // ============================================
 // Export for module usage (optional)
 // ============================================
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = {
-    generateUUID,
-    generateUUIDv4,
-    generatePassword,
-    copyToClipboard,
-    showToast,
-    safeBase64Encode,
-    safeBase64Decode,
-    formatDate,
-    debounce,
-    showLoading,
-    hideLoading,
-  };
+if (typeof module !== 'undefined' && module.exports) {
+   module.exports = {
+      generateUUID,
+      generateUUIDv4,
+      generatePassword,
+      copyToClipboard,
+      showToast,
+      safeBase64Encode,
+      safeBase64Decode,
+      formatDate,
+      debounce,
+      showLoading,
+      hideLoading
+   }
 }

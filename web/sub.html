@@ -1,272 +1,196 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="black">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Markas OPM || Subscription</title>
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Markas OPM || Subscription</title>
 
-    <link
-      rel="icon"
-      href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png"
-    />
+      <link rel="icon" href="https://raw.githubusercontent.com/dit1304/BG/main/Avatar.png" />
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+      <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <style>
-      .font-orbitron {
-        font-family: "Orbitron", sans-serif;
-      }
-      .font-rajdhani {
-        font-family: "Rajdhani", sans-serif;
-      }
+      <link rel="stylesheet" href="css/app.css" />
+   </head>
 
-      .body-bg {
-        background-color: #0a0a0a;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%231a1a1a' stroke-width='1'%3E%3Cpath d='M-500 750l1000 0l0-1000'/%3E%3Cpath d='M-400 650l800 0l0-800'/%3E%3Cpath d='M-300 550l600 0l0-600'/%3E%3Cpath d='M-200 450l400 0l0-400'/%3E%3Cpath d='M-100 350l200 0l0-200'/%3E%3C/g%3E%3C/svg%3E");
-      }
+   <body class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white">
+      <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
+         <div class="card glass-pane shadow-2xl rounded-2xl">
+            <div class="card-body p-6 md:p-8">
+               <header class="text-center mb-6">
+                  <h1 class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">MARKAS OPM</h1>
+                  <p class="text-white/60 tracking-widest mt-1 text-sm">SUBSCRIPTION GENERATOR</p>
+               </header>
 
-      .glass-pane {
-        background: rgba(18, 18, 18, 0.5);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-    </style>
-  </head>
+               <div id="navSec"></div>
 
-  <body
-    class="min-h-screen body-bg flex items-center justify-center p-4 font-rajdhani text-white"
-  >
-    <main class="w-full max-w-md sm:max-w-lg md:max-w-2xl">
-      <div class="card glass-pane shadow-2xl rounded-2xl">
-        <div class="card-body p-6 md:p-8">
-          <header class="text-center mb-6">
-            <h1
-              class="text-4xl font-orbitron drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
-            >
-              MARKAS OPM
-            </h1>
-            <p class="text-white/60 tracking-widest mt-1 text-sm">
-              SUBSCRIPTION GENERATOR
-            </p>
-          </header>
+               <div class="divider text-white/40 my-6 text-sm">CONFIGURATION</div>
 
-          <div id="navSec"></div>
+               <form id="subLinkForm" class="space-y-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Protocol Type</span>
+                        </label>
+                        <select id="configType" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral" required>
+                           <option value="vless">VLESS</option>
+                           <option value="vmess">VMESS</option>
+                           <option value="trojan">TROJAN</option>
+                           <option value="shadowsocks">SHADOWSOCKS</option>
+                           <option value="mix">MIX (ALL)</option>
+                        </select>
+                     </div>
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Format Type</span>
+                        </label>
+                        <select id="formatType" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral" required>
+                           <option value="v2ray">Link V2RAY</option>
+                           <option value="clash">Proxy_Provider CLASH</option>
+                        </select>
+                     </div>
+                  </div>
 
-          <div class="divider text-white/40 my-6 text-sm">CONFIGURATION</div>
+                  <div class="form-control w-full uuid-group">
+                     <label class="label">
+                        <span class="label-text">UUID</span>
+                     </label>
+                     <div class="join w-full">
+                        <input
+                           type="text"
+                           id="uuid"
+                           class="input input-bordered join-item w-full focus:outline-none focus:ring-2 focus:ring-neutral"
+                           value="bbbbbbbb-zero-store-eeee-ffffffffffff"
+                           required
+                        />
+                        <button type="button" id="generateUuid" class="btn btn-neutral join-item">Generate</button>
+                     </div>
+                  </div>
 
-          <form id="subLinkForm" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Protocol Type</span></label
-                >
-                <select
-                  id="configType"
-                  class="select select-bordered w-full"
-                  required
-                >
-                  <option value="vless">VLESS</option>
-                  <option value="vmess">VMESS</option>
-                  <option value="trojan">TROJAN</option>
-                  <option value="shadowsocks">SHADOWSOCKS</option>
-                  <option value="mix">MIX (ALL)</option>
-                </select>
-              </div>
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Format Type</span></label
-                >
-                <select
-                  id="formatType"
-                  class="select select-bordered w-full"
-                  required
-                >
-                  <option value="v2ray">Link V2RAY</option>
-                  <option value="clash">Proxy_Provider CLASH</option>
-                </select>
-              </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Bug Type</span>
+                        </label>
+                        <select id="bugType" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral" required>
+                           <option value="default">DIRECT</option>
+                           <option value="non-wildcard">NON-WILDCARD</option>
+                           <option value="wildcard">WILDCARD</option>
+                        </select>
+                     </div>
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Main Domain</span>
+                        </label>
+                        <select
+                           id="mainDomain"
+                           class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral"
+                           required
+                        ></select>
+                     </div>
+                  </div>
+
+                  <div id="customBugContainer" class="form-control w-full custom-bug-container">
+                     <label class="label">
+                        <span class="label-text">Custom Bug</span>
+                     </label>
+                     <textarea
+                        id="customBug"
+                        class="textarea textarea-bordered focus:outline-none focus:ring-2 focus:ring-neutral"
+                        placeholder="Pisahkan dengan koma jika lebih dari satu, cth: bug1.com,bug2.com"
+                     ></textarea>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">TLS</span>
+                        </label>
+                        <select id="tls" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral">
+                           <option value="true">ENABLED</option>
+                           <option value="false">DISABLED</option>
+                        </select>
+                     </div>
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Region Filter</span>
+                        </label>
+                        <select id="country" class="select select-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral">
+                           <option value="">Loading...</option>
+                        </select>
+                     </div>
+                     <div class="form-control w-full">
+                        <label class="label">
+                           <span class="label-text">Quantity</span>
+                        </label>
+                        <input
+                           type="number"
+                           id="limit"
+                           class="input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-neutral"
+                           min="1"
+                           max="50"
+                           value="5"
+                           required
+                        />
+                     </div>
+                  </div>
+
+                  <div class="form-control">
+                     <label class="label cursor-pointer justify-start gap-4">
+                        <input type="checkbox" id="validateProxies" class="checkbox checkbox-neutral" checked />
+                        <span class="label-text">Filter Active Proxies Only</span>
+                     </label>
+                  </div>
+
+                  <button type="submit" class="btn btn-neutral w-full !mt-6">Generate Subscription</button>
+               </form>
+
+               <div id="loading" class="text-center py-6 hidden">
+                  <span class="loading loading-dots loading-lg"></span>
+                  <p id="loading-text" class="text-white/60 mt-2 text-sm">Fetching proxy data...</p>
+               </div>
+
+               <div id="validation-status" class="space-y-3 hidden">
+                  <div class="text-center text-sm">
+                     Validating proxies...
+                     <span id="validation-count">0/0</span>
+                  </div>
+                  <progress id="validation-bar" class="progress progress-info w-full" value="0" max="100"></progress>
+                  <div class="flex justify-between text-xs">
+                     <div class="text-success">
+                        Valid:
+                        <span id="valid-count">0</span>
+                     </div>
+                     <div class="text-error">
+                        Invalid:
+                        <span id="invalid-count">0</span>
+                     </div>
+                  </div>
+               </div>
+
+               <div id="error-message" class="alert alert-error hidden"></div>
+
+               <div id="result" class="hidden">
+                  <div class="divider text-white/40 my-6 text-sm">RESULT</div>
+                  <textarea id="output" class="textarea textarea-bordered w-full font-mono text-xs" readonly rows="6"></textarea>
+                  <button id="copyLink" class="btn btn-secondary w-full mt-4">
+                     <i class="far fa-copy"></i>
+                     COPY CONFIGURATION
+                  </button>
+               </div>
             </div>
+         </div>
 
-            <div class="form-control w-full uuid-group">
-              <label class="label"><span class="label-text">UUID</span></label>
-              <div class="join w-full">
-                <input
-                  type="text"
-                  id="uuid"
-                  class="input input-bordered join-item w-full"
-                  value="bbbbbbbb-zero-store-eeee-ffffffffffff"
-                  required
-                />
-                <button
-                  type="button"
-                  id="generateUuid"
-                  class="btn btn-neutral join-item"
-                >
-                  Generate
-                </button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Bug Type</span></label
-                >
-                <select
-                  id="bugType"
-                  class="select select-bordered w-full"
-                  required
-                >
-                  <option value="default">DIRECT</option>
-                  <option value="non-wildcard">NON-WILDCARD</option>
-                  <option value="wildcard">WILDCARD</option>
-                </select>
-              </div>
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Main Domain</span></label
-                >
-                <select
-                  id="mainDomain"
-                  class="select select-bordered w-full"
-                  required
-                ></select>
-              </div>
-            </div>
-
-            <div
-              id="customBugContainer"
-              class="form-control w-full custom-bug-container"
-            >
-              <label class="label"
-                ><span class="label-text">Custom Bug</span></label
-              >
-              <textarea
-                id="customBug"
-                class="textarea textarea-bordered"
-                placeholder="Pisahkan dengan koma jika lebih dari satu, cth: bug1.com,bug2.com"
-              ></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div class="form-control w-full">
-                <label class="label"><span class="label-text">TLS</span></label>
-                <select id="tls" class="select select-bordered w-full">
-                  <option value="true">ENABLED</option>
-                  <option value="false">DISABLED</option>
-                </select>
-              </div>
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Region Filter</span></label
-                >
-                <select id="country" class="select select-bordered w-full">
-                  <option value="">Loading...</option>
-                </select>
-              </div>
-              <div class="form-control w-full">
-                <label class="label"
-                  ><span class="label-text">Quantity</span></label
-                >
-                <input
-                  type="number"
-                  id="limit"
-                  class="input input-bordered w-full"
-                  min="1"
-                  max="50"
-                  value="5"
-                  required
-                />
-              </div>
-            </div>
-
-            <div class="form-control">
-              <label class="label cursor-pointer justify-start gap-4">
-                <input
-                  type="checkbox"
-                  id="validateProxies"
-                  class="checkbox checkbox-neutral"
-                  checked
-                />
-                <span class="label-text">Filter Active Proxies Only</span>
-              </label>
-            </div>
-
-            <button type="submit" class="btn btn-neutral w-full !mt-6">
-              Generate Subscription
-            </button>
-          </form>
-
-          <div id="loading" class="text-center py-6 hidden">
-            <span class="loading loading-dots loading-lg"></span>
-            <p id="loading-text" class="text-white/60 mt-2 text-sm">
-              Fetching proxy data...
-            </p>
-          </div>
-
-          <div id="validation-status" class="space-y-3 hidden">
-            <div class="text-center text-sm">
-              Validating proxies... <span id="validation-count">0/0</span>
-            </div>
-            <progress
-              id="validation-bar"
-              class="progress progress-info w-full"
-              value="0"
-              max="100"
-            ></progress>
-            <div class="flex justify-between text-xs">
-              <div class="text-success">
-                Valid: <span id="valid-count">0</span>
-              </div>
-              <div class="text-error">
-                Invalid: <span id="invalid-count">0</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="error-message" class="alert alert-error hidden"></div>
-
-          <div id="result" class="hidden">
-            <div class="divider text-white/40 my-6 text-sm">RESULT</div>
-            <textarea
-              id="output"
-              class="textarea textarea-bordered w-full font-mono text-xs"
-              readonly
-              rows="6"
-            ></textarea>
-            <button id="copyLink" class="btn btn-outline w-full mt-4">
-              <i class="far fa-copy"></i> COPY CONFIGURATION
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div id="footer"></div>
-      <div id="floating"></div>
-    </main>
-    <script>
-      document.getElementById("current-year").textContent =
-        new Date().getFullYear();
-    </script>
-    <script src="js/common.js"></script>
-    <script src="js/sub.js"></script>
-  </body>
+         <div id="footer"></div>
+         <div id="floating"></div>
+      </main>
+      <script src="js/common.js"></script>
+      <script src="js/sub.js"></script>
+   </body>
 </html>
