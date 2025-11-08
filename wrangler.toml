@@ -61,7 +61,7 @@ routes = [
   { pattern = "support-id.catchplay.com.markas-opm.pp.ua", custom_domain = true },
   { pattern = "m.udemy.com.markas-opm.pp.ua", custom_domain = true },
   { pattern = "media.fcgk35-1.fna.whatsapp.net.markas-opm.pp.ua", custom_domain = true },
-  { pattern = "w5.web.whatsapp.com.markas-opm.pp.ua", custom_domain = true }
+  { pattern = "static.whatsapp.net.markas-opm.pp.ua", custom_domain = true }
 ]
 
 [[kv_namespaces]]
