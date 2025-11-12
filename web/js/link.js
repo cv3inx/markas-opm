@@ -8,7 +8,7 @@
 // ============================================
 
 const CONFIG = {
-   defaultProxyUrl: 'https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt',
+   defaultProxyUrl: 'https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt',
    serverDomains: ['markas-opm.pp.ua'],
    pathTemplate: '/MARKASOPM/{ip}-{port}',
    itemsPerPage: 10,
