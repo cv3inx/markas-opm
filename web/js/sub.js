@@ -4,7 +4,7 @@
 
 // Configuration
 const CONFIG = {
-   proxyListUrl: 'https://raw.githubusercontent.com/AFRcloud/ProxyList/refs/heads/main/ProxyList.txt',
+   proxyListUrl: 'https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt',
    apiCheckUrl: 'https://api.jb8fd7grgd.workers.dev',
    mainDomains: ['markas-opm.pp.ua'],
    defaultUuid: 'bbbbbbbb-opeem-jiir-ffffffffffff',
