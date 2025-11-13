@@ -28,12 +28,12 @@ async fn main(req: Request, env: Env, _: Context) -> Result<Response> {
     let link_page_url = env.var("LINK_PAGE_URL").map(|x| x.to_string()).unwrap();
     let converter_page_url = env.var("CONVERTER_PAGE_URL").map(|x| x.to_string()).unwrap();
 
-    let config = Config { 
-        uuid, 
-        host: host.clone(), 
-        proxy_addr: host, 
-        proxy_port: 443, 
-        main_page_url, 
+    let config = Config {
+        uuid,
+        host: host.clone(),
+        proxy_addr: host,
+        proxy_port: 443,
+        main_page_url,
         sub_page_url,
         link_page_url,
         converter_page_url,
@@ -55,9 +55,9 @@ async fn main(req: Request, env: Env, _: Context) -> Result<Response> {
     // CRITICAL FIX: Check if this is a WebSocket upgrade request
     // If not WebSocket, return early to prevent hang
     let upgrade = req.headers().get("Upgrade").ok().flatten().unwrap_or_default();
-    
+
     // If path matches tunnel route but NOT a WebSocket, return error immediately
-    if (path.starts_with("/MARKASOPM/") || (path.len() > 1 && path != "/" && path != "/sub" && path != "/link" && path != "/converter")) 
+    if (path.starts_with("/zyone/") || (path.len() > 1 && path != "/" && path != "/sub" && path != "/link" && path != "/converter"))
         && upgrade != "websocket" {
         return Response::error("WebSocket connection required for proxy tunnel", 400);
     }
@@ -68,7 +68,7 @@ async fn main(req: Request, env: Env, _: Context) -> Result<Response> {
         .on_async("/sub", sub)
         .on_async("/link", link)
         .on_async("/converter", converter)
-        .on_async("/MARKASOPM/:proxyip", tunnel)
+        .on_async("/zyone/:proxyip", tunnel)
         .on_async("/:proxyip", tunnel)
         .run(req, env)
         .await
@@ -80,7 +80,7 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
         Ok(Some(val)) => val,
         _ => return Response::error("WebSocket Upgrade header required", 400),
     };
-    
+
     if upgrade != "websocket" {
         return Response::error("This endpoint requires WebSocket connection", 400);
     }
@@ -89,15 +89,15 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
         Some(p) => p.to_string(),
         None => return Response::error("Missing proxyip parameter", 400),
     };
-    
+
     // Handle KV proxy lookup
     if PROXYKV_PATTERN.is_match(&proxyip) {
         let kvid_list: Vec<String> = proxyip.split(",").map(|s| s.to_string()).collect();
-        
+
         if kvid_list.is_empty() {
             return Response::error("Empty proxy list", 400);
         }
-        
+
         let kv = match cx.kv("opm") {
             Ok(k) => k,
             Err(e) => {
@@ -105,10 +105,10 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
                 return Response::error("KV store not available", 500);
             }
         };
-        
+
         let mut proxy_kv_str = kv.get("proxy_kv").text().await?.unwrap_or_default();
         let mut rand_buf = [0u8; 2];
-        
+
         if let Err(e) = getrandom::getrandom(&mut rand_buf) {
             console_log!("Random generation failed: {}", e);
             return Response::error("Failed to generate random number", 500);
@@ -116,10 +116,10 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
 
         if proxy_kv_str.is_empty() {
             console_log!("Fetching proxy KV from GitHub...");
-            
+
             let fetch_req = Fetch::Url(Url::parse("https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/kvProxyList.json")?);
             let mut res = fetch_req.send().await?;
-            
+
             if res.status_code() == 200 {
                 proxy_kv_str = res.text().await?;
                 if let Err(e) = kv.put("proxy_kv", &proxy_kv_str)?.expiration_ttl(60 * 60 * 24).execute().await {
@@ -174,7 +174,7 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
             return Response::error("Failed to create WebSocket connection", 500);
         }
     };
-    
+
     if let Err(e) = server.accept() {
         console_log!("Failed to accept WebSocket: {:?}", e);
         return Response::error("Failed to accept WebSocket", 500);
@@ -183,7 +183,7 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
     // Spawn WebSocket handler with timeout protection
     wasm_bindgen_futures::spawn_local(async move {
         console_log!("[tunnel] WebSocket connection established");
-        
+
         match server.events() {
             Ok(events) => {
                 // Process the proxy stream
@@ -200,7 +200,7 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
                 let _ = server.close(Some(1011), Some("Internal error"));
             }
         }
-        
+
         console_log!("[tunnel] Handler completed");
     });
 
@@ -210,27 +210,27 @@ async fn tunnel(req: Request, mut cx: RouteContext<Config>) -> Result<Response> 
 async fn handle_css_file(req: Request) -> Result<Response> {
     let url = req.url()?;
     let path = url.path();
-    
+
     // Extract the CSS filename from the path
     let filename = path.strip_prefix("/css/").unwrap_or("");
-    
+
     // Construct the GitHub URL for the CSS file
     let css_url = format!("{}/css/{}", GITHUB_BASE_URL, filename);
-    
+
     // Fetch the CSS file from GitHub
     let req = Fetch::Url(Url::parse(&css_url)?);
     let mut res = req.send().await?;
-    
+
     if res.status_code() == 200 {
         let css = res.text().await?;
-        
+
         // Create a response with the CSS content and appropriate headers
         let mut headers = Headers::new();
         headers.set("Content-Type", "text/css")?;
-        
+
         // Add caching headers
         headers.set("Cache-Control", "public, max-age=86400")?; // Cache for 1 day
-        
+
         Ok(Response::ok(css)?.with_headers(headers))
     } else {
         Response::error("CSS file not found", 404)
@@ -241,27 +241,27 @@ async fn handle_css_file(req: Request) -> Result<Response> {
 async fn handle_js_file(req: Request) -> Result<Response> {
     let url = req.url()?;
     let path = url.path();
-    
+
     // Extract the JS filename from the path
     let filename = path.strip_prefix("/js/").unwrap_or("");
-    
+
     // Construct the GitHub URL for the JS file
     let js_url = format!("{}/js/{}", GITHUB_BASE_URL, filename);
-    
+
     // Fetch the JS file from GitHub
     let req = Fetch::Url(Url::parse(&js_url)?);
     let mut res = req.send().await?;
-    
+
     if res.status_code() == 200 {
         let js = res.text().await?;
-        
+
         // Create a response with the JS content and appropriate headers
         let mut headers = Headers::new();
         headers.set("Content-Type", "application/javascript")?;
-        
+
         // Add caching headers
         headers.set("Cache-Control", "public, max-age=86400")?; // Cache for 1 day
-        
+
         Ok(Response::ok(js)?.with_headers(headers))
     } else {
         Response::error("JavaScript file not found", 404)
@@ -272,23 +272,23 @@ async fn handle_js_file(req: Request) -> Result<Response> {
 async fn handle_image_file(req: Request) -> Result<Response> {
     let url = req.url()?;
     let path = url.path();
-    
+
     // Extract the image filename from the path
     let filename = path.strip_prefix("/images/").unwrap_or("");
-    
+
     // Construct the GitHub URL for the image file
     let image_url = format!("{}/images/{}", GITHUB_BASE_URL, filename);
-    
+
     // Fetch the image file from GitHub
     let req = Fetch::Url(Url::parse(&image_url)?);
     let mut res = req.send().await?;
-    
+
     if res.status_code() == 200 {
         let image_data = res.bytes().await?;
-        
+
         // Create a response with the image content and appropriate headers
         let mut headers = Headers::new();
-        
+
         // Set content type based on file extension
         if filename.ends_with(".png") {
             headers.set("Content-Type", "image/png")?;
@@ -301,10 +301,10 @@ async fn handle_image_file(req: Request) -> Result<Response> {
         } else {
             headers.set("Content-Type", "application/octet-stream")?;
         }
-        
+
         // Add caching headers
         headers.set("Cache-Control", "public, max-age=86400")?; // Cache for 1 day
-        
+
         Ok(Response::from_bytes(image_data)?.with_headers(headers))
     } else {
         Response::error("Image file not found", 404)

@@ -10,7 +10,7 @@ const CONFIG = {
    defaultUuid: 'bbbbbbbb-opeem-jiir-ffffffffffff',
    maxProxies: 50,
    defaultProxyCount: 5,
-   pathTemplate: '/MARKASOPM/{ip}-{port}',
+   pathTemplate: '/zyone/{ip}-{port}',
    batchSize: 5, // Jumlah proxy yang divalidasi secara paralel dalam satu batch
    loadingMessages: {
       fetchProxies: 'Fetching proxy list...',
