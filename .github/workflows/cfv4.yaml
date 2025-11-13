@@ -1,32 +1,37 @@
 name: cf workers
 
 on:
-  workflow_dispatch:
+   workflow_dispatch:
 
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
-      - 'LICENSE.md'
+   push:
+      branches:
+         - main
+      paths-ignore:
+         - 'README.md'
+         - 'LICENSE.md'
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: cf
-    steps:
-      - uses: actions/checkout@v4
+   deploy:
+      runs-on: ubuntu-latest
+      environment: cf
+      steps:
+         - uses: actions/checkout@v4
 
-      - name: Install Rust and worker-build
-        run: |
-          rustup update
-          rustup target add wasm32-unknown-unknown
-          cargo install -q worker-build
+         - name: Install Rust and target
+           run: |
+              rustup update
+              rustup target add wasm32-unknown-unknown
+              cargo install -q worker-build
 
-      - name: Build with worker-build (no wasm-opt)
-        run: WASMOPT=0 worker-build --release
+         - name: Sync wasm-bindgen version
+           run: |
+              cargo update -p wasm-bindgen --precise 0.2.105
 
-      - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+         - name: Build with worker-build (no wasm-opt)
+           run: |
+              WASMOPT=0 worker-build --release
+
+         - name: Deploy to Cloudflare Workers
+           uses: cloudflare/wrangler-action@v3
+           with:
+              apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
