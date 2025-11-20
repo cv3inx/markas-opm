@@ -18,6 +18,7 @@ const CONFIG = {
       { value: 'ava.game.naver.com', label: 'ava.game.naver.com' },
       { value: 'deo.shopeemobile', label: 'deo.shopeemobile' },
       { value: 'df.infra.sz.shopee.co.id', label: 'df.infra.sz.shopee.co.id' },
+      { value: 'gslb.sgw.shopeemobile.com', label: 'gslb.sgw.shopeemobile.com' },
       { value: 'support.zoom.us', label: 'support.zoom.us' },
       { value: 'api24-normal-alisg.tiktokv.com', label: 'api24-normal-alisg.tiktokv.com' },
       { value: 'cf.shopee.co.id.sea-sw.swiftserve.com', label: 'cf.shopee.co.id.sea-sw.swiftserve.com' },
