@@ -14,6 +14,8 @@ routes = [
   { pattern = "grabacademyportal.grab.com.markas-opm.pp.ua", custom_domain = true },
   { pattern = "investors.spotify.com.markas-opm.pp.ua", custom_domain = true },
   { pattern = "edu.udemy.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "deo.shopeemobile.com.markas-opm.pp.ua", custom_domain = true },
+  { pattern = "df.infra.sz.shopee.co.id.markas-opm.pp.ua", custom_domain = true }
 ]
 
 [[kv_namespaces]]
